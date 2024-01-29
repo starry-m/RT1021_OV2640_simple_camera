@@ -14,6 +14,10 @@ processor_version: 15.0.1
 board: MIMXRT1020-EVK
 pin_labels:
 - {pin_num: '54', pin_signal: PMIC_STBY_REQ, label: SD_PWREN, identifier: U_LED}
+- {pin_num: '125', pin_signal: GPIO_EMC_31, label: 'SEMC_DM1/U14[39]', identifier: SEMC_DM1;LCD_BLK}
+- {pin_num: '123', pin_signal: GPIO_EMC_33, label: 'SEMC_D9/U14[44]', identifier: SEMC_D9;LCD_CS}
+- {pin_num: '120', pin_signal: GPIO_EMC_36, label: 'SEMC_D12/U14[48]', identifier: SEMC_D12;LCD_DC}
+- {pin_num: '117', pin_signal: GPIO_EMC_39, label: 'SEMC_D15/U14[53]', identifier: SEMC_D15;LCD_RES}
 - {pin_num: '106', pin_signal: GPIO_AD_B0_05, label: 'JTAG_nTRST/J16[3]/USER_LED/J17[5]', identifier: USER_LED}
 power_domains: {NVCC_GPIO: '3.3'}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
@@ -45,6 +49,14 @@ BOARD_InitPins:
   - {pin_num: '54', peripheral: GPIO5, signal: 'gpio_io, 02', pin_signal: PMIC_STBY_REQ, direction: OUTPUT}
   - {pin_num: '105', peripheral: LPUART1, signal: TX, pin_signal: GPIO_AD_B0_06}
   - {pin_num: '101', peripheral: LPUART1, signal: RX, pin_signal: GPIO_AD_B0_07}
+  - {pin_num: '124', peripheral: LPSPI4, signal: SCK, pin_signal: GPIO_EMC_32}
+  - {pin_num: '123', peripheral: LPSPI4, signal: PCS0, pin_signal: GPIO_EMC_33, identifier: LCD_CS, direction: OUTPUT}
+  - {pin_num: '122', peripheral: LPSPI4, signal: SDO, pin_signal: GPIO_EMC_34}
+  - {pin_num: '121', peripheral: LPSPI4, signal: SDI, pin_signal: GPIO_EMC_35}
+  - {pin_num: '120', peripheral: GPIO3, signal: 'gpio_io, 04', pin_signal: GPIO_EMC_36, identifier: LCD_DC, direction: OUTPUT}
+  - {pin_num: '119', peripheral: LPSPI4, signal: PCS2, pin_signal: GPIO_EMC_37}
+  - {pin_num: '125', peripheral: GPIO2, signal: 'gpio_io, 31', pin_signal: GPIO_EMC_31, identifier: LCD_BLK, direction: OUTPUT, gpio_init_state: 'true'}
+  - {pin_num: '117', peripheral: GPIO3, signal: 'gpio_io, 07', pin_signal: GPIO_EMC_39, identifier: LCD_RES, direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -67,6 +79,33 @@ void BOARD_InitPins(void) {
   /* Initialize GPIO functionality on GPIO_AD_B0_05 (pin 106) */
   GPIO_PinInit(GPIO1, 5U, &USER_LED_config);
 
+  /* GPIO configuration of LCD_BLK on GPIO_EMC_31 (pin 125) */
+  gpio_pin_config_t LCD_BLK_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 1U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_EMC_31 (pin 125) */
+  GPIO_PinInit(GPIO2, 31U, &LCD_BLK_config);
+
+  /* GPIO configuration of LCD_DC on GPIO_EMC_36 (pin 120) */
+  gpio_pin_config_t LCD_DC_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_EMC_36 (pin 120) */
+  GPIO_PinInit(GPIO3, 4U, &LCD_DC_config);
+
+  /* GPIO configuration of LCD_RES on GPIO_EMC_39 (pin 117) */
+  gpio_pin_config_t LCD_RES_config = {
+      .direction = kGPIO_DigitalOutput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_EMC_39 (pin 117) */
+  GPIO_PinInit(GPIO3, 7U, &LCD_RES_config);
+
   /* GPIO configuration of U_LED on PMIC_STBY_REQ (pin 54) */
   gpio_pin_config_t U_LED_config = {
       .direction = kGPIO_DigitalOutput,
@@ -84,6 +123,14 @@ void BOARD_InitPins(void) {
 #else
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_ARM_CM7_TRACE_SWO, 0U); 
 #endif
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_31_GPIO2_IO31, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_32_LPSPI4_SCK, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_33_LPSPI4_PCS0, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_34_LPSPI4_SDO, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_35_LPSPI4_SDI, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_36_GPIO3_IO04, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_37_LPSPI4_PCS2, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_39_GPIO3_IO07, 0U); 
   IOMUXC_SetPinMux(IOMUXC_SNVS_PMIC_STBY_REQ_GPIO5_IO02, 0U); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05, 0x10B0U); 
 #if FSL_IOMUXC_DRIVER_VERSION >= MAKE_VERSION(2, 0, 3)

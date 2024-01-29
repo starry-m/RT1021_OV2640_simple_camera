@@ -27,6 +27,10 @@
             <processor_version>15.0.1</processor_version>
             <pin_labels>
                <pin_label pin_num="54" pin_signal="PMIC_STBY_REQ" label="SD_PWREN" identifier="U_LED"/>
+               <pin_label pin_num="125" pin_signal="GPIO_EMC_31" label="SEMC_DM1/U14[39]" identifier="SEMC_DM1;LCD_BLK"/>
+               <pin_label pin_num="123" pin_signal="GPIO_EMC_33" label="SEMC_D9/U14[44]" identifier="SEMC_D9;LCD_CS"/>
+               <pin_label pin_num="120" pin_signal="GPIO_EMC_36" label="SEMC_D12/U14[48]" identifier="SEMC_D12;LCD_DC"/>
+               <pin_label pin_num="117" pin_signal="GPIO_EMC_39" label="SEMC_D15/U14[53]" identifier="SEMC_D15;LCD_RES"/>
                <pin_label pin_num="106" pin_signal="GPIO_AD_B0_05" label="JTAG_nTRST/J16[3]/USER_LED/J17[5]" identifier="USER_LED"/>
             </pin_labels>
             <power_domains>
@@ -49,6 +53,11 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="LPUART1" description="Peripheral LPUART1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="LPSPI4" description="Peripheral LPSPI4 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -96,6 +105,35 @@
                   </pin>
                   <pin peripheral="LPUART1" signal="TX" pin_num="105" pin_signal="GPIO_AD_B0_06"/>
                   <pin peripheral="LPUART1" signal="RX" pin_num="101" pin_signal="GPIO_AD_B0_07"/>
+                  <pin peripheral="LPSPI4" signal="SCK" pin_num="124" pin_signal="GPIO_EMC_32"/>
+                  <pin peripheral="LPSPI4" signal="PCS0" pin_num="123" pin_signal="GPIO_EMC_33">
+                     <pin_features>
+                        <pin_feature name="identifier" value="LCD_CS"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPSPI4" signal="SDO" pin_num="122" pin_signal="GPIO_EMC_34"/>
+                  <pin peripheral="LPSPI4" signal="SDI" pin_num="121" pin_signal="GPIO_EMC_35"/>
+                  <pin peripheral="GPIO3" signal="gpio_io, 04" pin_num="120" pin_signal="GPIO_EMC_36">
+                     <pin_features>
+                        <pin_feature name="identifier" value="LCD_DC"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="LPSPI4" signal="PCS2" pin_num="119" pin_signal="GPIO_EMC_37"/>
+                  <pin peripheral="GPIO2" signal="gpio_io, 31" pin_num="125" pin_signal="GPIO_EMC_31">
+                     <pin_features>
+                        <pin_feature name="identifier" value="LCD_BLK"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO3" signal="gpio_io, 07" pin_num="117" pin_signal="GPIO_EMC_39">
+                     <pin_features>
+                        <pin_feature name="identifier" value="LCD_RES"/>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                     </pin_features>
+                  </pin>
                </pins>
             </function>
          </functions_list>
@@ -398,6 +436,16 @@
                   <data type="Version">1.0.0</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpspi" description="工具链/IDE工程中未找到LPSPI Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.lpspi" description="工具链/IDE工程不支持LPSPI Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="equivalent">
+                  <data type="Version">2.6.0</data>
+               </feature>
+            </dependency>
             <dependency resourceType="Tool" resourceId="Clocks" description="外围设备工具需要 Clocks 工具，但它已被禁用。" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data>true</data>
@@ -439,6 +487,31 @@
                      </feature>
                   </dependency>
                   <dependency resourceType="ClockOutput" resourceId="UART_CLK_ROOT" description="UART_CLK_ROOT is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="frequency" evaluation="greaterThan">
+                        <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI4.lpspi_sck" description="Signal serial clock is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI4.lpspi_sin" description="Signal serial data input is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI4.lpspi_sout" description="Signal serial data output is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="LPSPI4.lpspi_pcs0" description="Signal peripheral chip select 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="ClockOutput" resourceId="LPSPI_CLK_ROOT" description="LPSPI_CLK_ROOT is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
                      </feature>
@@ -507,6 +580,40 @@
                            </struct>
                         </struct>
                         <struct name="debug_console_codegenerator"/>
+                     </config_set>
+                  </instance>
+                  <instance name="LPSPI4" uuid="9696d664-4941-4945-adf9-6f914743b38a" type="lpspi" type_id="lpspi_3b8318dca8e0034b76e041f04d445c24" mode="polling" peripheral="LPSPI4" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="main">
+                        <setting name="mode" value="kLPSPI_Master"/>
+                        <setting name="clockSource" value="LpspiClock"/>
+                        <setting name="clockSourceFreq" value="ClocksTool_DefaultInit"/>
+                        <struct name="master">
+                           <setting name="baudRate" value="5000000"/>
+                           <setting name="bitsPerFrame" value="8"/>
+                           <setting name="cpol" value="kLPSPI_ClockPolarityActiveHigh"/>
+                           <setting name="cpha" value="kLPSPI_ClockPhaseFirstEdge"/>
+                           <setting name="direction" value="kLPSPI_MsbFirst"/>
+                           <setting name="pcsToSckDelayInNanoSec" value="1000"/>
+                           <setting name="lastSckToPcsDelayInNanoSec" value="1000"/>
+                           <setting name="betweenTransferDelayInNanoSec" value="1000"/>
+                           <setting name="whichPcs" value="kLPSPI_Pcs0"/>
+                           <setting name="pcsActiveHighOrLow" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="pinCfg" value="kLPSPI_SdiInSdoOut"/>
+                           <setting name="pcsFunc" value="kLPSPI_PcsAsCs"/>
+                           <setting name="dataOutConfig" value="kLpspiDataOutRetained"/>
+                           <setting name="enableInputDelay" value="false"/>
+                        </struct>
+                        <setting name="set_FifoWaterMarks" value="false"/>
+                        <struct name="fifoWaterMarks">
+                           <setting name="txWatermark" value="0"/>
+                           <setting name="rxWatermark" value="0"/>
+                        </struct>
+                        <setting name="allPcsPolarityEnable" value="false"/>
+                        <struct name="allPcsPolarity">
+                           <setting name="kLPSPI_Pcs1Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs2Active" value="kLPSPI_PcsActiveLow"/>
+                           <setting name="kLPSPI_Pcs3Active" value="kLPSPI_PcsActiveLow"/>
+                        </struct>
                      </config_set>
                   </instance>
                </instances>

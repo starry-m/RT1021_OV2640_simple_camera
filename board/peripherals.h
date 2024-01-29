@@ -10,8 +10,9 @@
  * Included files
  **********************************************************************************************************************/
 #include "fsl_common.h"
-#include "fsl_debug_console.h"
 #include "fsl_clock.h"
+#include "fsl_lpspi.h"
+#include "fsl_debug_console.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -21,6 +22,11 @@ extern "C" {
  * Definitions
  **********************************************************************************************************************/
 /* Definitions for BOARD_InitPeripherals functional group */
+/* BOARD_InitPeripherals defines for LPSPI4 */
+/* Definition of peripheral ID */
+#define LPSPI4_PERIPHERAL LPSPI4
+/* Definition of clock source */
+#define LPSPI4_CLOCK_FREQ 105600000UL
 /* Debug console is initialized in the peripheral tool */
 #define BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL 
 /* Definition of serial peripheral instance */
@@ -31,6 +37,11 @@ extern "C" {
 #define DEBUGCONSOLE_BAUDRATE 115200UL
 /* Definition of the clock source frequency */
 #define DEBUGCONSOLE_CLK_FREQ 80000000UL
+
+/***********************************************************************************************************************
+ * Global variables
+ **********************************************************************************************************************/
+extern const lpspi_master_config_t LPSPI4_config;
 
 /***********************************************************************************************************************
  * Initialization functions

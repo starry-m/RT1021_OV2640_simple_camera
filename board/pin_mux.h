@@ -147,6 +147,31 @@ void BOARD_InitBootPins(void);
 #define BOARD_LCD_RES_PIN                                                     7U   /*!< PORT pin number */
 #define BOARD_LCD_RES_PIN_MASK                                        (1U << 7U)   /*!< PORT pin mask */
 
+/* GPIO_EMC_10 (number 7), SEMC_CAS/U14[17] */
+/* Routed pin properties */
+#define BOARD_SEMC_CAS_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
+#define BOARD_SEMC_CAS_SIGNAL                                                SCK   /*!< Signal name */
+
+/* GPIO_EMC_11 (number 4), SEMC_RAS/U14[18] */
+/* Routed pin properties */
+#define BOARD_SEMC_RAS_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
+#define BOARD_SEMC_RAS_SIGNAL                                               PCS0   /*!< Signal name */
+
+/* GPIO_EMC_12 (number 3), SEMC_CS0/U14[19] */
+/* Routed pin properties */
+#define BOARD_SEMC_CS0_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
+#define BOARD_SEMC_CS0_SIGNAL                                                SDO   /*!< Signal name */
+
+/* GPIO_EMC_13 (number 2), SEMC_BA0/U14[20] */
+/* Routed pin properties */
+#define BOARD_SEMC_BA0_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
+#define BOARD_SEMC_BA0_SIGNAL                                                SDI   /*!< Signal name */
+
+/* GPIO_EMC_14 (number 1), SEMC_BA1/U14[21] */
+/* Routed pin properties */
+#define BOARD_SEMC_BA1_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
+#define BOARD_SEMC_BA1_SIGNAL                                               PCS1   /*!< Signal name */
+
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

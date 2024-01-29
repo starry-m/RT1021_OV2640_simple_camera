@@ -54,9 +54,14 @@ BOARD_InitPins:
   - {pin_num: '122', peripheral: LPSPI4, signal: SDO, pin_signal: GPIO_EMC_34}
   - {pin_num: '121', peripheral: LPSPI4, signal: SDI, pin_signal: GPIO_EMC_35}
   - {pin_num: '120', peripheral: GPIO3, signal: 'gpio_io, 04', pin_signal: GPIO_EMC_36, identifier: LCD_DC, direction: OUTPUT}
-  - {pin_num: '119', peripheral: LPSPI4, signal: PCS2, pin_signal: GPIO_EMC_37}
+  - {pin_num: '119', peripheral: LPSPI4, signal: PCS2, pin_signal: GPIO_EMC_37, direction: OUTPUT}
   - {pin_num: '125', peripheral: GPIO2, signal: 'gpio_io, 31', pin_signal: GPIO_EMC_31, identifier: LCD_BLK, direction: OUTPUT, gpio_init_state: 'true'}
   - {pin_num: '117', peripheral: GPIO3, signal: 'gpio_io, 07', pin_signal: GPIO_EMC_39, identifier: LCD_RES, direction: OUTPUT}
+  - {pin_num: '7', peripheral: LPSPI2, signal: SCK, pin_signal: GPIO_EMC_10}
+  - {pin_num: '4', peripheral: LPSPI2, signal: PCS0, pin_signal: GPIO_EMC_11, direction: OUTPUT}
+  - {pin_num: '3', peripheral: LPSPI2, signal: SDO, pin_signal: GPIO_EMC_12}
+  - {pin_num: '2', peripheral: LPSPI2, signal: SDI, pin_signal: GPIO_EMC_13}
+  - {pin_num: '1', peripheral: LPSPI2, signal: PCS1, pin_signal: GPIO_EMC_14, direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -123,6 +128,11 @@ void BOARD_InitPins(void) {
 #else
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_ARM_CM7_TRACE_SWO, 0U); 
 #endif
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_10_LPSPI2_SCK, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_11_LPSPI2_PCS0, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_12_LPSPI2_SDO, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_13_LPSPI2_SDI, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_14_LPSPI2_PCS1, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_31_GPIO2_IO31, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_32_LPSPI4_SCK, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_33_LPSPI4_PCS0, 0U); 

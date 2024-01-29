@@ -104,8 +104,8 @@
 #define BOARD_ARDUINO_I2C_INDEX (4)
 
 /* Display. */
-#define BOARD_LCD_DC_GPIO     GPIO1 /*! LCD data/command port */
-#define BOARD_LCD_DC_GPIO_PIN 15U   /*! LCD data/command pin */
+//#define BOARD_LCD_DC_GPIO     GPIO1 /*! LCD data/command port */
+//#define BOARD_LCD_DC_GPIO_PIN 15U   /*! LCD data/command pin */
 
 /* @Brief Board Bluetooth HCI UART configuration */
 #define BOARD_BT_UART_BASEADDR    LPUART3

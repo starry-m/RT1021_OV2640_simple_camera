@@ -10,7 +10,7 @@ extern void SysTick_DelayTicks(uint32_t n);
 #define DELAY 0x80
 #define HAL_Delay  SysTick_DelayTicks
 
-lpspi_transfer_t masterXfer;
+static lpspi_transfer_t masterXfer;
 
 // based on Adafruit ST7735 library for Arduino
 static const uint8_t

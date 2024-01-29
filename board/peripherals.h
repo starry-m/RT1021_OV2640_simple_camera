@@ -27,6 +27,11 @@ extern "C" {
 #define LPSPI4_PERIPHERAL LPSPI4
 /* Definition of clock source */
 #define LPSPI4_CLOCK_FREQ 105600000UL
+/* BOARD_InitPeripherals defines for LPSPI2 */
+/* Definition of peripheral ID */
+#define LPSPI2_PERIPHERAL LPSPI2
+/* Definition of clock source */
+#define LPSPI2_CLOCK_FREQ 105600000UL
 /* Debug console is initialized in the peripheral tool */
 #define BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL 
 /* Definition of serial peripheral instance */
@@ -42,6 +47,7 @@ extern "C" {
  * Global variables
  **********************************************************************************************************************/
 extern const lpspi_master_config_t LPSPI4_config;
+extern const lpspi_master_config_t LPSPI2_config;
 
 /***********************************************************************************************************************
  * Initialization functions

@@ -4,6 +4,11 @@
         "peripherals.h": "c",
         "clock_config.h": "c",
         "fonts.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "lis2mdl_reg.h": "c",
+        "com_delay.h": "c",
+        "stdint.h": "c",
+        "math.h": "c",
+        "fsl_debug_console.h": "c"
     }
 }

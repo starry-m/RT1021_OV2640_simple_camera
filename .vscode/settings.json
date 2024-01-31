@@ -9,6 +9,9 @@
         "com_delay.h": "c",
         "stdint.h": "c",
         "math.h": "c",
-        "fsl_debug_console.h": "c"
+        "fsl_debug_console.h": "c",
+        "board.h": "c",
+        "stddef.h": "c",
+        "sensor_measure.h": "c"
     }
 }

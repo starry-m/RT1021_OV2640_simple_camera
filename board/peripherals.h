@@ -12,6 +12,11 @@
 #include "fsl_common.h"
 #include "fsl_clock.h"
 #include "fsl_lpspi.h"
+#include "fsl_lpi2c.h"
+#include "fsl_pwm.h"
+#include "fsl_adapter_gpio.h"
+#include "pin_mux.h"
+#include "fsl_enc.h"
 #include "fsl_debug_console.h"
 
 #if defined(__cplusplus)
@@ -32,6 +37,49 @@ extern "C" {
 #define LPSPI2_PERIPHERAL LPSPI2
 /* Definition of clock source */
 #define LPSPI2_CLOCK_FREQ 105600000UL
+/* BOARD_InitPeripherals defines for LPI2C1 */
+/* Definition of peripheral ID */
+#define LPI2C1_PERIPHERAL LPI2C1
+/* Definition of clock source */
+#define LPI2C1_CLOCK_FREQ 60000000UL
+/* Definition of slave address */
+#define LPI2C1_MASTER_SLAVE_ADDRESS 0
+/* Definition of peripheral ID */
+#define PWM2_PERIPHERAL PWM2
+/* Definition of submodule 0 ID */
+#define PWM2_SM0 kPWM_Module_0
+/* Definition of clock source of submodule 0 frequency in Hertz */
+#define PWM2_SM0_SM_CLK_SOURCE_FREQ_HZ 125000000U
+/* Definition of submodule 0 counter clock source frequency in Hertz - PWM2_SM0_SM_CLK_SOURCE_FREQ_HZ divided by prescaler */
+#define PWM2_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 62500000U
+/* Definition of submodule 0 counter (PWM) frequency in Hertz */
+#define PWM2_SM0_COUNTER_FREQ_HZ 16001U
+/* Definition of submodule 0 channel A ID */
+#define PWM2_SM0_A kPWM_PwmA
+/* Definition of submodule 0 channel B ID */
+#define PWM2_SM0_B kPWM_PwmB
+/* Definition of submodule 0 channel X ID */
+#define PWM2_SM0_X kPWM_PwmX
+/* Definition of fault Fault0 ID */
+#define PWM2_F0_FAULT0 kPWM_Fault_0
+/* Definition of fault Fault1 ID */
+#define PWM2_F0_FAULT1 kPWM_Fault_1
+/* Definition of fault Fault2 ID */
+#define PWM2_F0_FAULT2 kPWM_Fault_2
+/* Definition of fault Fault3 ID */
+#define PWM2_F0_FAULT3 kPWM_Fault_3
+/* gpio_io, 05 signal defines */
+/* Definition of the pin direction */
+#define BOARD_ENC_Buttion_PIN_DIRECTION kHAL_GpioDirectionIn
+/* Definition of the pin level after initialization */
+#define BOARD_ENC_Buttion_PIN_LEVEL 0U
+/* gpio_io, 31 signal defines */
+/* Definition of the pin direction */
+#define BOARD_LCD_BLK_PIN_DIRECTION kHAL_GpioDirectionOut
+/* Definition of the pin level after initialization */
+#define BOARD_LCD_BLK_PIN_LEVEL 1U
+/* Definition of peripheral ID */
+#define ENC1_PERIPHERAL ENC1
 /* Debug console is initialized in the peripheral tool */
 #define BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL 
 /* Definition of serial peripheral instance */
@@ -48,6 +96,24 @@ extern "C" {
  **********************************************************************************************************************/
 extern const lpspi_master_config_t LPSPI4_config;
 extern const lpspi_master_config_t LPSPI2_config;
+extern const lpi2c_master_config_t LPI2C1_masterConfig;
+extern pwm_config_t PWM2_SM0_config;
+
+extern pwm_signal_param_t PWM2_SM0_pwm_function_config[2];
+extern const pwm_fault_input_filter_param_t PWM2_faultInputFilter_config;
+extern const pwm_fault_param_t PWM2_Fault0_fault_config;
+extern const pwm_fault_param_t PWM2_Fault1_fault_config;
+extern const pwm_fault_param_t PWM2_Fault2_fault_config;
+extern const pwm_fault_param_t PWM2_Fault3_fault_config;
+extern GPIO_HANDLE_DEFINE(BOARD_ENC_Buttion_handle);
+extern GPIO_HANDLE_DEFINE(BOARD_LCD_BLK_handle);
+extern enc_config_t ENC1_config;
+
+/***********************************************************************************************************************
+ * Global functions
+ **********************************************************************************************************************/
+/* Get GPIO pin configuration */
+hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, hal_gpio_direction_t direction, uint8_t level);
 
 /***********************************************************************************************************************
  * Initialization functions

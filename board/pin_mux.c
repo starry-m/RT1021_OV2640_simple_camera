@@ -12,18 +12,24 @@ package_id: MIMXRT1021DAG5A
 mcu_data: ksdk2_0
 processor_version: 15.0.1
 board: MIMXRT1020-EVK
+external_user_signals: {}
 pin_labels:
 - {pin_num: '54', pin_signal: PMIC_STBY_REQ, label: SD_PWREN, identifier: U_LED}
+- {pin_num: '13', pin_signal: GPIO_EMC_05, label: 'SEMC_D5/U14[10]', identifier: SEMC_D5;ENC_SW;ENC_Buttion}
 - {pin_num: '125', pin_signal: GPIO_EMC_31, label: 'SEMC_DM1/U14[39]', identifier: SEMC_DM1;LCD_BLK}
 - {pin_num: '123', pin_signal: GPIO_EMC_33, label: 'SEMC_D9/U14[44]', identifier: SEMC_D9;LCD_CS}
 - {pin_num: '120', pin_signal: GPIO_EMC_36, label: 'SEMC_D12/U14[48]', identifier: SEMC_D12;LCD_DC}
 - {pin_num: '117', pin_signal: GPIO_EMC_39, label: 'SEMC_D15/U14[53]', identifier: SEMC_D15;LCD_RES}
 - {pin_num: '106', pin_signal: GPIO_AD_B0_05, label: 'JTAG_nTRST/J16[3]/USER_LED/J17[5]', identifier: USER_LED}
+- {pin_num: '98', pin_signal: GPIO_AD_B0_10, label: 'ENET_RXD0/U11[16]/J19[6]', identifier: ENET_RXD0;LED1}
+- {pin_num: '94', pin_signal: GPIO_AD_B0_14, label: 'ENET_TXD0/U11[24]/J17[7]', identifier: ENET_TXD0;LED2}
+- {pin_num: '93', pin_signal: GPIO_AD_B0_15, label: 'ENET_TXD1/U11[25]/J19[2]', identifier: ENET_TXD1;LED3}
 power_domains: {NVCC_GPIO: '3.3'}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
 #include "fsl_common.h"
+#include "fsl_xbara.h"
 #include "fsl_iomuxc.h"
 #include "fsl_gpio.h"
 #include "pin_mux.h"
@@ -62,6 +68,14 @@ BOARD_InitPins:
   - {pin_num: '3', peripheral: LPSPI2, signal: SDO, pin_signal: GPIO_EMC_12}
   - {pin_num: '2', peripheral: LPSPI2, signal: SDI, pin_signal: GPIO_EMC_13}
   - {pin_num: '1', peripheral: LPSPI2, signal: PCS1, pin_signal: GPIO_EMC_14, direction: OUTPUT}
+  - {pin_num: '16', peripheral: LPI2C1, signal: SCL, pin_signal: GPIO_EMC_02, software_input_on: Enable, open_drain: Enable}
+  - {pin_num: '15', peripheral: LPI2C1, signal: SDA, pin_signal: GPIO_EMC_03, software_input_on: Enable, open_drain: Enable}
+  - {pin_num: '98', peripheral: PWM2, signal: 'A, 2', pin_signal: GPIO_AD_B0_10, identifier: LED1, direction: OUTPUT}
+  - {pin_num: '94', peripheral: PWM2, signal: 'A, 0', pin_signal: GPIO_AD_B0_14, identifier: LED2, direction: OUTPUT}
+  - {pin_num: '93', peripheral: PWM2, signal: 'B, 0', pin_signal: GPIO_AD_B0_15, identifier: LED3, direction: OUTPUT}
+  - {pin_num: '10', peripheral: ENC1, signal: 'PHASE, A', pin_signal: GPIO_EMC_07}
+  - {pin_num: '8', peripheral: ENC1, signal: 'PHASE, B', pin_signal: GPIO_EMC_09}
+  - {pin_num: '13', peripheral: GPIO2, signal: 'gpio_io, 05', pin_signal: GPIO_EMC_05, identifier: ENC_Buttion, direction: INPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -74,6 +88,7 @@ BOARD_InitPins:
 void BOARD_InitPins(void) {
   CLOCK_EnableClock(kCLOCK_Iomuxc);           
   CLOCK_EnableClock(kCLOCK_IomuxcSnvs);       
+  CLOCK_EnableClock(kCLOCK_Xbar1);            
 
   /* GPIO configuration of USER_LED on GPIO_AD_B0_05 (pin 106) */
   gpio_pin_config_t USER_LED_config = {
@@ -83,6 +98,15 @@ void BOARD_InitPins(void) {
   };
   /* Initialize GPIO functionality on GPIO_AD_B0_05 (pin 106) */
   GPIO_PinInit(GPIO1, 5U, &USER_LED_config);
+
+  /* GPIO configuration of ENC_Buttion on GPIO_EMC_05 (pin 13) */
+  gpio_pin_config_t ENC_Buttion_config = {
+      .direction = kGPIO_DigitalInput,
+      .outputLogic = 0U,
+      .interruptMode = kGPIO_NoIntmode
+  };
+  /* Initialize GPIO functionality on GPIO_EMC_05 (pin 13) */
+  GPIO_PinInit(GPIO2, 5U, &ENC_Buttion_config);
 
   /* GPIO configuration of LCD_BLK on GPIO_EMC_31 (pin 125) */
   gpio_pin_config_t LCD_BLK_config = {
@@ -123,11 +147,19 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_06_LPUART1_TX, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_07_LPUART1_RX, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_10_FLEXPWM2_PWMA02, 0U); 
 #if FSL_IOMUXC_DRIVER_VERSION >= MAKE_VERSION(2, 0, 3)
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_ARM_TRACE_SWO, 0U); 
 #else
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_ARM_CM7_TRACE_SWO, 0U); 
 #endif
+  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_14_FLEXPWM2_PWMA00, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_15_FLEXPWM2_PWMB00, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_02_LPI2C1_SCL, 1U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_03_LPI2C1_SDA, 1U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_05_GPIO2_IO05, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_07_XBAR1_INOUT07, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_09_XBAR1_INOUT09, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_10_LPSPI2_SCK, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_11_LPSPI2_PCS0, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_12_LPSPI2_SDO, 0U); 
@@ -141,13 +173,22 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_36_GPIO3_IO04, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_37_LPSPI4_PCS2, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_39_GPIO3_IO07, 0U); 
+  IOMUXC_GPR->GPR6 = ((IOMUXC_GPR->GPR6 &
+    (~(IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7_MASK | IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_9_MASK))) 
+      | IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7(0x00U) 
+      | IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_9(0x00U) 
+    );
   IOMUXC_SetPinMux(IOMUXC_SNVS_PMIC_STBY_REQ_GPIO5_IO02, 0U); 
+  XBARA_SetSignalsConnection(XBARA, kXBARA1_InputIomuxXbarInout07, kXBARA1_OutputEnc1PhaseAInput); 
+  XBARA_SetSignalsConnection(XBARA, kXBARA1_InputIomuxXbarInout09, kXBARA1_OutputEnc1PhaseBInput); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_05_GPIO1_IO05, 0x10B0U); 
 #if FSL_IOMUXC_DRIVER_VERSION >= MAKE_VERSION(2, 0, 3)
   IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_11_ARM_TRACE_SWO, 0x10B0U); 
 #else
   IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B0_11_ARM_CM7_TRACE_SWO, 0x10B0U); 
 #endif
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_EMC_02_LPI2C1_SCL, 0x18B0U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_EMC_03_LPI2C1_SDA, 0x18B0U); 
 }
 /***********************************************************************************************************************
  * EOF

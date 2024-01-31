@@ -172,6 +172,60 @@ void BOARD_InitBootPins(void);
 #define BOARD_SEMC_BA1_PERIPHERAL                                         LPSPI2   /*!< Peripheral name */
 #define BOARD_SEMC_BA1_SIGNAL                                               PCS1   /*!< Signal name */
 
+/* GPIO_EMC_02 (number 16), SEMC_D2/U14[5] */
+/* Routed pin properties */
+#define BOARD_SEMC_D2_PERIPHERAL                                          LPI2C1   /*!< Peripheral name */
+#define BOARD_SEMC_D2_SIGNAL                                                 SCL   /*!< Signal name */
+
+/* GPIO_EMC_03 (number 15), SEMC_D3/U14[7] */
+/* Routed pin properties */
+#define BOARD_SEMC_D3_PERIPHERAL                                          LPI2C1   /*!< Peripheral name */
+#define BOARD_SEMC_D3_SIGNAL                                                 SDA   /*!< Signal name */
+
+/* GPIO_AD_B0_10 (number 98), ENET_RXD0/U11[16]/J19[6] */
+/* Routed pin properties */
+#define BOARD_LED1_PERIPHERAL                                               PWM2   /*!< Peripheral name */
+#define BOARD_LED1_SIGNAL                                                      A   /*!< Signal name */
+#define BOARD_LED1_CHANNEL                                                    2U   /*!< Signal channel */
+
+/* GPIO_AD_B0_14 (number 94), ENET_TXD0/U11[24]/J17[7] */
+/* Routed pin properties */
+#define BOARD_LED2_PERIPHERAL                                               PWM2   /*!< Peripheral name */
+#define BOARD_LED2_SIGNAL                                                      A   /*!< Signal name */
+#define BOARD_LED2_CHANNEL                                                    0U   /*!< Signal channel */
+
+/* GPIO_AD_B0_15 (number 93), ENET_TXD1/U11[25]/J19[2] */
+/* Routed pin properties */
+#define BOARD_LED3_PERIPHERAL                                               PWM2   /*!< Peripheral name */
+#define BOARD_LED3_SIGNAL                                                      B   /*!< Signal name */
+#define BOARD_LED3_CHANNEL                                                    0U   /*!< Signal channel */
+
+/* GPIO_EMC_07 (number 10), SEMC_D7/U14[13] */
+/* Routed pin properties */
+#define BOARD_SEMC_D7_PERIPHERAL                                            ENC1   /*!< Peripheral name */
+#define BOARD_SEMC_D7_SIGNAL                                               PHASE   /*!< Signal name */
+#define BOARD_SEMC_D7_CHANNEL                                                  A   /*!< Signal channel */
+
+/* GPIO_EMC_09 (number 8), SEMC_WE/U14[16] */
+/* Routed pin properties */
+#define BOARD_SEMC_WE_PERIPHERAL                                            ENC1   /*!< Peripheral name */
+#define BOARD_SEMC_WE_SIGNAL                                               PHASE   /*!< Signal name */
+#define BOARD_SEMC_WE_CHANNEL                                                  B   /*!< Signal channel */
+
+/* GPIO_EMC_05 (number 13), SEMC_D5/U14[10] */
+/* Routed pin properties */
+#define BOARD_ENC_Buttion_PERIPHERAL                                       GPIO2   /*!< Peripheral name */
+#define BOARD_ENC_Buttion_SIGNAL                                         gpio_io   /*!< Signal name */
+#define BOARD_ENC_Buttion_CHANNEL                                             5U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_ENC_Buttion_GPIO                                             GPIO2   /*!< GPIO peripheral base pointer */
+#define BOARD_ENC_Buttion_GPIO_PIN                                            5U   /*!< GPIO pin number */
+#define BOARD_ENC_Buttion_GPIO_PIN_MASK                               (1U << 5U)   /*!< GPIO pin mask */
+#define BOARD_ENC_Buttion_PORT                                             GPIO2   /*!< PORT peripheral base pointer */
+#define BOARD_ENC_Buttion_PIN                                                 5U   /*!< PORT pin number */
+#define BOARD_ENC_Buttion_PIN_MASK                                    (1U << 5U)   /*!< PORT pin mask */
+
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

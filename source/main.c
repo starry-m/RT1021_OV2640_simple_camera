@@ -48,84 +48,31 @@ void SysTick_DelayTicks(uint32_t n)
     {
     }
 }
-// uint8_t masterTxData[64] = {0U};
-void testSPI()
+
+
+void ADC_DEMO()
 {
-    lpspi_transfer_t masterXfer;
-
-    uint8_t send_data[2] = {0x8FU, 00};
-    uint8_t rx_data[2];
-    //    uint8_t bufp;
-    masterXfer.txData = send_data;
-    masterXfer.rxData = rx_data;
-    masterXfer.dataSize = 2;
-    masterXfer.configFlags =
-        kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap; //
-    LPSPI_MasterTransferBlocking(LPSPI2, &masterXfer);
-
-    //    masterXfer.txData   = NULL;
-    //    masterXfer.rxData   = &bufp;
-    //    masterXfer.dataSize = 1;
-    //     masterXfer.configFlags =
-    //    		 kLPSPI_MasterPcs0 | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
-    //    LPSPI_MasterTransferBlocking(LPSPI4, &masterXfer);
-
-    PRINTF("test rx_data=%x %x\n", rx_data[0], rx_data[1]);
-}
-
-void I2C_SENSOR_TEST()
-{
-#define LPI2C_MASTER_SLAVE_ADDR_7BIT 0x7EU
-#define LPI2C_DATA_LENGTH 33U
-
-    uint8_t g_master_txBuff[LPI2C_DATA_LENGTH];
-    status_t reVal = kStatus_Fail;
-    size_t txCount = 0xFFU;
-    uint8_t deviceAddress = 0x01U;
-    /* Send master blocking data to slave */
-    if (kStatus_Success == LPI2C_MasterStart(LPI2C1_PERIPHERAL, LPI2C_MASTER_SLAVE_ADDR_7BIT, kLPI2C_Write))
+#define DEMO_ADC_BASE          ADC1
+#define DEMO_ADC_USER_CHANNEL  0U
+#define DEMO_ADC_CHANNEL_GROUP 0U
+    uint8_t ticks=10;
+    while(ticks--)
     {
-        /* Check master tx FIFO empty or not */
-        LPI2C_MasterGetFifoCounts(LPI2C1_PERIPHERAL, NULL, &txCount);
-        while (txCount)
+        /*
+         When in software trigger mode, each conversion would be launched once calling the "ADC_SetChannelConfig()"
+         function, which works like writing a conversion command and executing it. For another channel's conversion,
+         just to change the "channelNumber" field in channel's configuration structure, and call the
+         "ADC_SetChannelConfig() again.
+        */
+          ADC_SetChannelConfig(ADC1_PERIPHERAL, ADC1_CH0_CONTROL_GROUP, &ADC1_channels_config[0]);
+        while (0U == ADC_GetChannelStatusFlags(DEMO_ADC_BASE, DEMO_ADC_CHANNEL_GROUP))
         {
-            LPI2C_MasterGetFifoCounts(LPI2C1_PERIPHERAL, NULL, &txCount);
         }
-        /* Check communicate with slave successful or not */
-        if (LPI2C_MasterGetStatusFlags(LPI2C1_PERIPHERAL) & kLPI2C_MasterNackDetectFlag)
-        {
-            return kStatus_LPI2C_Nak;
-        }
-
-        /* subAddress = 0x01, data = g_master_txBuff - write to slave.
-          start + slaveaddress(w) + subAddress + length of data buffer + data buffer + stop*/
-        reVal = LPI2C_MasterSend(LPI2C1_PERIPHERAL, &deviceAddress, 1);
-        if (reVal != kStatus_Success)
-        {
-            if (reVal == kStatus_LPI2C_Nak)
-            {
-                LPI2C_MasterStop(LPI2C1_PERIPHERAL);
-            }
-            return -1;
-        }
-
-        reVal = LPI2C_MasterSend(LPI2C1_PERIPHERAL, g_master_txBuff, LPI2C_DATA_LENGTH);
-        if (reVal != kStatus_Success)
-        {
-            if (reVal == kStatus_LPI2C_Nak)
-            {
-                LPI2C_MasterStop(LPI2C1_PERIPHERAL);
-            }
-            return -1;
-        }
-
-        reVal = LPI2C_MasterStop(LPI2C1_PERIPHERAL);
-        if (reVal != kStatus_Success)
-        {
-            return -1;
-        }
+        PRINTF("ADC Value: %d\r\n", ADC_GetChannelConversionValue(DEMO_ADC_BASE, DEMO_ADC_CHANNEL_GROUP));
+        HAL_Delay(300);
     }
-}
+
+    }
 /*!
  * @brief Main function
  */
@@ -153,15 +100,15 @@ int main(void)
         }
     }
     PRINTF("APP START !\n");
-//    PRINTF("float:%.2f\n", 3.145);
-    //    ST7735_Init();
-    //    ST7735_FillScreen(ST7735_BLUE);
-    //	ST7735_Init();
-    //	ST7735_FillScreen(ST7735_BLUE);
-    //	ST7735_FillScreen(ST7735_RED);
-    //	ST7735_FillScreen(ST7735_BLACK);
-    //	ST7735_FillScreen(ST7735_WHITE);
-    //	ST7735_FillScreen(ST7735_GREEN);
+    //    PRINTF("float:%.2f\n", 3.145);
+//       ST7735_Init();
+//       ST7735_FillScreen(ST7735_BLUE);
+    	ST7735_Init();
+    	ST7735_FillScreen(ST7735_BLUE);
+    	ST7735_FillScreen(ST7735_RED);
+    	ST7735_FillScreen(ST7735_BLACK);
+    	ST7735_FillScreen(ST7735_WHITE);
+    	ST7735_FillScreen(ST7735_GREEN);
     //    testSPI();
     //    SysTick_DelayTicks(2U);
     extern void lsm6ds3tr_c_read_data_polling(void);
@@ -184,15 +131,15 @@ int main(void)
     BH1730_test();
     double rth[2];
     float BH1730_light;
+    ADC_DEMO();
     while (1)
     {
 
-        if(0==read_temp_rh_1ch(rth))
+        if (0 == read_temp_rh_1ch(rth))
         {
-            PRINTF("NSHT30 READ:%3.4f,%3.6f%%\r\n",rth[0],rth[1]);
-
+            PRINTF("NSHT30 READ:%3.4f,%3.6f%%\r\n", rth[0], rth[1]);
         }
-        BH1730_light=BH1730_readLux();
+        BH1730_light = BH1730_readLux();
         PRINTF("BH1730_light=%.3f\n", BH1730_light);
         //    	 /* This read operation would capture all the position counter to responding hold registers. */
         //		mCurPosValue = ENC_GetPositionValue(ENC1);
@@ -202,7 +149,7 @@ int main(void)
         //		PRINTF("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue(ENC1));
         //		PRINTF("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue(ENC1));
         /* Delay 1000 ms */
-        SysTick_DelayTicks(1000U);
+        HAL_Delay(1000U);
         if (g_pinSet)
         {
             GPIO_PinWrite(BOARD_U_LED_GPIO, BOARD_U_LED_GPIO_PIN, 0U);
@@ -229,7 +176,5 @@ int main(void)
 
         /* Set the load okay bit for all submodules to load registers from their buffer */
         PWM_SetPwmLdok(PWM2, kPWM_Control_Module_0, true);
-
-
     }
 }

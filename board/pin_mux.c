@@ -76,6 +76,7 @@ BOARD_InitPins:
   - {pin_num: '10', peripheral: ENC1, signal: 'PHASE, A', pin_signal: GPIO_EMC_07}
   - {pin_num: '8', peripheral: ENC1, signal: 'PHASE, B', pin_signal: GPIO_EMC_09}
   - {pin_num: '13', peripheral: GPIO2, signal: 'gpio_io, 05', pin_signal: GPIO_EMC_05, identifier: ENC_Buttion, direction: INPUT}
+  - {pin_num: '96', peripheral: ADC1, signal: 'IN, 0', pin_signal: GPIO_AD_B0_12}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -153,6 +154,7 @@ void BOARD_InitPins(void) {
 #else
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_11_ARM_CM7_TRACE_SWO, 0U); 
 #endif
+  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_12_GPIO1_IO12, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_14_FLEXPWM2_PWMA00, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_15_FLEXPWM2_PWMB00, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_02_LPI2C1_SCL, 1U); 

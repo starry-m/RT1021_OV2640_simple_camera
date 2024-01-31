@@ -95,6 +95,11 @@
                         <data>true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="Peripheral" resourceId="ADC1" description="Peripheral ADC1 signals are routed in the Pins Tool, but the peripheral is not initialized in the Peripherals Tool." problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
                   <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitPins">
                      <feature name="enabled" evaluation="equal" configuration="core0">
                         <data>true</data>
@@ -227,6 +232,7 @@
                         <pin_feature name="direction" value="INPUT"/>
                      </pin_features>
                   </pin>
+                  <pin peripheral="ADC1" signal="IN, 0" pin_num="96" pin_signal="GPIO_AD_B0_12"/>
                </pins>
             </function>
          </functions_list>
@@ -579,6 +585,16 @@
                   <data type="Version">2.2.0</data>
                </feature>
             </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.adc_12b1msps_sar" description="工具链/IDE工程中未找到ADC Driver。工程不会被编译！" problem_level="2" source="Peripherals">
+               <feature name="enabled" evaluation="equal">
+                  <data type="Boolean">true</data>
+               </feature>
+            </dependency>
+            <dependency resourceType="SWComponent" resourceId="platform.drivers.adc_12b1msps_sar" description="工具链/IDE工程不支持ADC Driver版本。所需值: ${required_value}, 实际值: ${actual_value}. 工程可能没有被正确编译。" problem_level="1" source="Peripherals">
+               <feature name="version" evaluation="equivalent">
+                  <data type="Version">2.0.0</data>
+               </feature>
+            </dependency>
             <dependency resourceType="Tool" resourceId="Pins" description="外围设备工具需要 Pins 工具，但它已被禁用。" problem_level="2" source="Peripherals">
                <feature name="enabled" evaluation="equal">
                   <data>true</data>
@@ -737,6 +753,11 @@
                   <dependency resourceType="ClockOutput" resourceId="IPG_CLK_ROOT" description="IPG_CLK_ROOT is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="ADC1.adc_in.0" description="Signal IN, channel 0 is not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
                      </feature>
                   </dependency>
                </dependencies>
@@ -1148,6 +1169,54 @@
                               <setting name="enable_custom_name" value="false"/>
                            </struct>
                         </struct>
+                     </config_set>
+                  </instance>
+                  <instance name="ADC1" uuid="a22611c9-7571-41bf-9ce2-d94c2906c72e" type="adc_12b1msps_sar" type_id="adc_12b1msps_sar_6a490e886349a7b2b07bed10ce7b299b" mode="ADC_GENERAL" peripheral="ADC1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
+                     <config_set name="fsl_adc">
+                        <struct name="clockConfig">
+                           <setting name="clockSource" value="kADC_ClockSourceAD"/>
+                           <setting name="clockSourceFreq" value="custom:10 MHz"/>
+                           <setting name="clockDriver" value="kADC_ClockDriver2"/>
+                           <setting name="samplePeriodMode" value="kADC_SamplePeriodShort2Clocks"/>
+                           <setting name="enableAsynchronousClockOutput" value="true"/>
+                        </struct>
+                        <struct name="conversionConfig">
+                           <setting name="resolution" value="kADC_Resolution12Bit"/>
+                           <setting name="hardwareAverageMode" value="kADC_HardwareAverageDisable"/>
+                           <setting name="enableHardwareTrigger" value="software"/>
+                           <setting name="enableHighSpeed" value="false"/>
+                           <setting name="enableLowPower" value="false"/>
+                           <setting name="enableContinuousConversion" value="false"/>
+                           <setting name="enableOverWrite" value="false"/>
+                           <setting name="enableDma" value="false"/>
+                        </struct>
+                        <struct name="resultingTime"/>
+                        <struct name="resultCorrection">
+                           <setting name="doAutoCalibration" value="false"/>
+                           <setting name="offset" value="0"/>
+                        </struct>
+                        <struct name="hardwareCompareConfiguration">
+                           <setting name="hardwareCompareMode" value="disabled"/>
+                           <setting name="value1" value="0"/>
+                           <setting name="value2" value="0"/>
+                        </struct>
+                        <setting name="enableInterrupt" value="false"/>
+                        <struct name="adc_interrupt">
+                           <setting name="IRQn" value="ADC1_IRQn"/>
+                           <setting name="enable_interrrupt" value="enabled"/>
+                           <setting name="enable_priority" value="false"/>
+                           <setting name="priority" value="0"/>
+                           <setting name="enable_custom_name" value="false"/>
+                        </struct>
+                        <array name="adc_channels_config">
+                           <struct name="0">
+                              <setting name="channelNumber" value="IN.0"/>
+                              <setting name="channelName" value=""/>
+                              <setting name="channelGroup" value="0"/>
+                              <setting name="initializeChannel" value="true"/>
+                              <setting name="enableInterruptOnConversionCompleted" value="false"/>
+                           </struct>
+                        </array>
                      </config_set>
                   </instance>
                </instances>

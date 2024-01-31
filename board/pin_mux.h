@@ -226,6 +226,12 @@ void BOARD_InitBootPins(void);
 #define BOARD_ENC_Buttion_PIN                                                 5U   /*!< PORT pin number */
 #define BOARD_ENC_Buttion_PIN_MASK                                    (1U << 5U)   /*!< PORT pin mask */
 
+/* GPIO_AD_B0_12 (number 96), ENET_RXER/U11[20]/J19[4] */
+/* Routed pin properties */
+#define BOARD_ENET_RXER_PERIPHERAL                                          ADC1   /*!< Peripheral name */
+#define BOARD_ENET_RXER_SIGNAL                                                IN   /*!< Signal name */
+#define BOARD_ENET_RXER_CHANNEL                                               0U   /*!< Signal channel */
+
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

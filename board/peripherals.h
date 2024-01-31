@@ -17,6 +17,7 @@
 #include "fsl_adapter_gpio.h"
 #include "pin_mux.h"
 #include "fsl_enc.h"
+#include "fsl_adc.h"
 #include "fsl_debug_console.h"
 
 #if defined(__cplusplus)
@@ -80,6 +81,13 @@ extern "C" {
 #define BOARD_LCD_BLK_PIN_LEVEL 1U
 /* Definition of peripheral ID */
 #define ENC1_PERIPHERAL ENC1
+/* BOARD_InitPeripherals defines for ADC1 */
+/* Definition of peripheral ID */
+#define ADC1_PERIPHERAL ADC1
+/* Definition of special channel interconnected with ADC_ETC which takes real channel to be measured from ADC_ETC. */
+#define ADC1_CHANNEL_DRIVEN_BY_ADC_ETC 16U
+/* Channel 0 (IN.0) conversion control group. */
+#define ADC1_CH0_CONTROL_GROUP 0U
 /* Debug console is initialized in the peripheral tool */
 #define BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL 
 /* Definition of serial peripheral instance */
@@ -108,6 +116,8 @@ extern const pwm_fault_param_t PWM2_Fault3_fault_config;
 extern GPIO_HANDLE_DEFINE(BOARD_ENC_Buttion_handle);
 extern GPIO_HANDLE_DEFINE(BOARD_LCD_BLK_handle);
 extern enc_config_t ENC1_config;
+extern const adc_config_t ADC1_config;
+extern const adc_channel_config_t ADC1_channels_config[1];
 
 /***********************************************************************************************************************
  * Global functions

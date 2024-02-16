@@ -71,6 +71,8 @@ uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
    ---------------------------------------------------------------------------- */
 
 void SystemInit (void) {
+
+
 #if ((__FPU_PRESENT == 1) && (__FPU_USED == 1))
   SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));    /* set CP10, CP11 Full Access */
 #endif /* ((__FPU_PRESENT == 1) && (__FPU_USED == 1)) */

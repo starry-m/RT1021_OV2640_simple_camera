@@ -184,7 +184,7 @@ extern "C" {
 /* Definition of the line pitch size in bytes */
 #define FLEXIO1_LINE_PITCH_BYTES 320
 /* Definition of number of the buffers inside allocated block */
-#define FLEXIO1_FRAME_BUFFER_COUNT 2
+#define FLEXIO1_FRAME_BUFFER_COUNT 1
 /* Definition of camera buffer alignment */
 #define FLEXIO1_BUFFER_ALIGN 32
 /* FLEXIO1 eDMA source request. */

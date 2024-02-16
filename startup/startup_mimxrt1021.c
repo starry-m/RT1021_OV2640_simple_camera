@@ -594,7 +594,7 @@ extern unsigned int __data_section_table;
 extern unsigned int __data_section_table_end;
 extern unsigned int __bss_section_table;
 extern unsigned int __bss_section_table_end;
-
+#include "MIMXRT1021.h"
 //*****************************************************************************
 // Reset entry point for your code.
 // Sets up a simple runtime environment and initializes the C/C++
@@ -609,6 +609,21 @@ void ResetISR(void) {
 #if defined (__USE_CMSIS)
 // If __USE_CMSIS defined, then call CMSIS SystemInit code
     SystemInit();
+
+    //reset dtcm to 6 blank,itcm to 1 blank,otcm to 1 blank
+    IOMUXC_GPR->GPR17 = 0xfaa5; //分配相关的blank
+    //dtcm config 调整dtcm分配后的大小
+//    IOMUXC_GPR->GPR14 &= ~IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK;
+//    IOMUXC_GPR->GPR14 |= IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(8);
+//    IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_INIT_DTCM_EN_MASK;
+//    //itcm config 调整itcm分配后的大小
+//    IOMUXC_GPR->GPR14 &= ~IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK;
+//    IOMUXC_GPR->GPR14 |= IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(7);
+//    IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_INIT_ITCM_EN_MASK;
+    //select ram allocate source from FLEXRAM_BANK_CFG
+    IOMUXC_GPR->GPR16 &= ~IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL_MASK;
+    IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL(1U);
+
 #else
     // Disable Watchdog
     volatile unsigned int *WDOG1_WCR = (unsigned int *) 0x400B8000;

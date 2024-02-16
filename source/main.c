@@ -52,20 +52,39 @@ void SysTick_DelayTicks(uint32_t n)
     {
     }
 }
+
+uint16_t   ov7670_finish_flag = 0,ov7670_frame_conter=0;    //一场图像采集完成标志位
+edma_transfer_config_t transferConfig;
+flexio_camera_transfer_t cam_xfer;
+//uint16_t CAM_BUFFER[160*128];
 /* BOARD_CAM_VS_handle callback function */
 void BOARD_CAM_VS_callback(void *param) {
   /* Place your code here */
 	/* clear the interrupt status */
 	GPIO_PortClearInterruptFlags(BOARD_CAM_VS_GPIO, BOARD_CAM_VS_GPIO_PIN_MASK);
+
+
+//	ov7670_finish_flag++;
+    ov7670_frame_conter++;
+//	DMA0->TCD[0].DADDR = (uint32_t)FLEXIO1_Camera_Buffer[0];
+
+	 FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig,
+	                                   kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
+
+    /* Enable DMA channel request. */
+//    DMA0->SERQ = DMA_SERQ_SERQ(0);
+	 FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
+
+    __DSB();
 }
-uint16_t   ov7670_finish_flag = 0;    //一场图像采集完成标志位
-//uint16_t CAM_BUFFER[160*128];
+
 void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData)
 {
 
 //	ov7670_finish_flag=1;
 	ov7670_finish_flag++;
-
+    /* Enable DMA channel request. */
+//    DMA0->SERQ = DMA_SERQ_SERQ(FLEXIO_CAMERA_DMA_CHN);
 }
 
 /* PIT_IRQn interrupt handler */
@@ -105,11 +124,65 @@ void ADC_DEMO()
     }
 
     }
-/*!
- * @brief Main function
- */
 
-edma_transfer_config_t transferConfig;
+
+
+/* DMA channel assigements. */
+#define FLEXIO_CAMERA_DMA_CHN           0u
+#define FLEXIO_CAMERA_DMA_MUX_SRC       (kDmaRequestMuxFlexIO1Request0Request1 & 0xFF)
+
+#define OV7670_FRAME_BYTES FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT
+#define FXIO_SHFT_COUNT         4u          /* 4 shifters */
+#define DMA_TRSF_SIZE           8u          /* 8 bytes */
+#define DMA_MINOR_LOOP_SIZE     16u         /* 16 bytes */
+#define DMA_MAJOR_LOOP_SIZE     (OV7670_FRAME_BYTES / DMA_MINOR_LOOP_SIZE)
+static void configDMA(void)
+{
+    uint32_t soff, smod = 0u, size=0u;
+
+    while(1u << size < DMA_TRSF_SIZE) /* size = log2(DMA_TRSF_SIZE) */
+    {
+        size++;
+    }
+
+    if(DMA_TRSF_SIZE == DMA_MINOR_LOOP_SIZE)
+    {
+        soff = 0u;
+    }
+    else
+    {
+        soff = DMA_TRSF_SIZE;
+        while(1u << smod < DMA_MINOR_LOOP_SIZE) /* smod = log2(DMA_MINOR_LOOP_SIZE) */
+        {
+            smod++;
+        }
+    }
+
+    /* Configure DMA TCD */
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SADDR = FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SOFF = soff;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].ATTR = DMA_ATTR_SMOD(smod) |
+                                            DMA_ATTR_SSIZE(size) |
+                                            DMA_ATTR_DMOD(0u) |
+                                            DMA_ATTR_DSIZE(size);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].NBYTES_MLNO = DMA_MINOR_LOOP_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SLAST = 0u;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DADDR = (uint32_t)(*FLEXIO1_Camera_Buffer[0]);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DOFF = DMA_TRSF_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DLAST_SGA = -OV7670_FRAME_BYTES;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR = 0u;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR |= DMA_CSR_DREQ_MASK;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].BITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
+
+    /* Configure DMA MUX Source */
+    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] = DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] &
+                                            (~DMAMUX_CHCFG_SOURCE_MASK) |
+                                            DMAMUX_CHCFG_SOURCE(FLEXIO_CAMERA_DMA_MUX_SRC);
+    /* Enable DMA channel. */
+    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] |= DMAMUX_CHCFG_ENBL_MASK;
+}
+
 void CAM_OV7670_DEMO()
 {
 	/* lcd init  */
@@ -119,18 +192,27 @@ void CAM_OV7670_DEMO()
 	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
 	HAL_Delay(20);
 	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 1U);
+
+    /* Clear all the flag. */
+    FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig, kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
+
+    /* Enable FlexIO. */
+    FLEXIO_CAMERA_Enable(&FLEXIO1_peripheralConfig, true);
+
 	Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA2);
     /* Set the load okay bit for all submodules to load registers from their buffer */
     PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
     /* Start the PWM generation from Submodules 0, 1 and 2 */
     PWM_StartTimer(PWM1, kPWM_Control_Module_0);
 	/*cam dma transfer start */
-    EDMA_PrepareTransfer(&transferConfig,
+
+
+/*    EDMA_PrepareTransfer(&transferConfig,
         (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),
         8,
-        (void *)(FLEXIO1_Camera_Buffer),
+        (void *)(FLEXIO1_Camera_Buffer[0]),
         8,
-        8,
+        8*8,
 		FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT,
         kEDMA_MemoryToMemory);
 
@@ -147,16 +229,28 @@ void CAM_OV7670_DEMO()
 //        }
 
 
-        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo8bytes,kEDMA_ModuloDisable);
+        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo64bytes,kEDMA_ModuloDisable);
         EDMA_StartTransfer(&FLEXIO1_FLEXIO_0_Handle);
+//        configDMA();
+         Enable FlexIO DMA request.
+        FLEXIO_CAMERA_EnableRxDMA(&FLEXIO1_peripheralConfig, true);*/
+    cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[0];
+    cam_xfer.dataNum=FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT;
+
+    FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
     PRINTF("OV7670 START\n");
 	/*loop frame show*/
     while(1)
     {
-
-
+    	PRINTF("ov7670_finish_flag=%d,ov7670_frame_conter=%d\n",ov7670_finish_flag,ov7670_frame_conter);
+    	PRINTF("FLEXIO1_Camera_Buffer=%d\n",FLEXIO1_Camera_Buffer[0][10][10]);
+    	HAL_Delay(100);
     }
 }
+
+/*!
+ * @brief Main function
+ */
 int main(void)
 {
     /* Board pin init */
@@ -186,14 +280,18 @@ int main(void)
     //    PRINTF("float:%.2f\n", 3.145);
 //       ST7735_Init();
 //       ST7735_FillScreen(ST7735_BLUE);
-    	ST7735_Init();
-    	ST7735_FillScreen(ST7735_BLUE);
-    	ST7735_FillScreen(ST7735_RED);
-    	ST7735_FillScreen(ST7735_BLACK);
-    	ST7735_FillScreen(ST7735_WHITE);
-    	ST7735_FillScreen(ST7735_GREEN);
+//    	ST7735_Init();
+//    	ST7735_FillScreen(ST7735_BLUE);
+//    	ST7735_FillScreen(ST7735_RED);
+//    	ST7735_FillScreen(ST7735_BLACK);
+//    	ST7735_FillScreen(ST7735_WHITE);
+//    	ST7735_FillScreen(ST7735_GREEN);
     //    testSPI();
     //    SysTick_DelayTicks(2U);
+
+    CAM_OV7670_DEMO();
+
+
     extern void lsm6ds3tr_c_read_data_polling(void);
     //    lsm6ds3tr_c_read_data_polling();
 
@@ -211,7 +309,7 @@ int main(void)
     //	ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
     //	uint32_t mCurPosValue;
 
-//    CAM_OV7670_DEMO();
+
 
     BH1730_test();
     double rth[2];

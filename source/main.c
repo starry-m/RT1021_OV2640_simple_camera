@@ -21,8 +21,12 @@
  ******************************************************************************/
 #include "st7735.h"
 
+#include "fsl_xbara.h"
 #include "sensor_measure.h"
 #include "com_delay.h"
+
+
+#include "camera.h"
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -47,6 +51,34 @@ void SysTick_DelayTicks(uint32_t n)
     while (g_systickCounter != 0U)
     {
     }
+}
+/* BOARD_CAM_VS_handle callback function */
+void BOARD_CAM_VS_callback(void *param) {
+  /* Place your code here */
+	/* clear the interrupt status */
+	GPIO_PortClearInterruptFlags(BOARD_CAM_VS_GPIO, BOARD_CAM_VS_GPIO_PIN_MASK);
+}
+uint16_t   ov7670_finish_flag = 0;    //一场图像采集完成标志位
+//uint16_t CAM_BUFFER[160*128];
+void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData)
+{
+
+//	ov7670_finish_flag=1;
+	ov7670_finish_flag++;
+
+}
+
+/* PIT_IRQn interrupt handler */
+void PIT_IRQHANDLER(void) {
+  /*  Place your code here */
+	/* Clear interrupt flag.*/
+	PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, kPIT_TimerFlag);
+
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+  #endif
 }
 
 
@@ -76,6 +108,55 @@ void ADC_DEMO()
 /*!
  * @brief Main function
  */
+
+edma_transfer_config_t transferConfig;
+void CAM_OV7670_DEMO()
+{
+	/* lcd init  */
+
+	/*camera ov7670 init ,12M XCLK,PWDN LOW,RST HIGH*/
+	GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
+	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
+	HAL_Delay(20);
+	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 1U);
+	Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA2);
+    /* Set the load okay bit for all submodules to load registers from their buffer */
+    PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
+    /* Start the PWM generation from Submodules 0, 1 and 2 */
+    PWM_StartTimer(PWM1, kPWM_Control_Module_0);
+	/*cam dma transfer start */
+    EDMA_PrepareTransfer(&transferConfig,
+        (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),
+        8,
+        (void *)(FLEXIO1_Camera_Buffer),
+        8,
+        8,
+		FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT,
+        kEDMA_MemoryToMemory);
+
+
+        EDMA_SubmitTransfer(&FLEXIO1_FLEXIO_0_Handle, &transferConfig);
+
+//        switch(4*flexio_shift_count)
+//        {
+//            case 4:     s_addr_modulo = kEDMA_Modulo4bytes;break;
+//            case 8:     s_addr_modulo = kEDMA_Modulo8bytes;break;
+//            case 16:    s_addr_modulo = kEDMA_Modulo16bytes;break;
+//            case 32:    s_addr_modulo = kEDMA_Modulo32bytes;break;
+//            default:assert(0);  //参数有误
+//        }
+
+
+        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo8bytes,kEDMA_ModuloDisable);
+        EDMA_StartTransfer(&FLEXIO1_FLEXIO_0_Handle);
+    PRINTF("OV7670 START\n");
+	/*loop frame show*/
+    while(1)
+    {
+
+
+    }
+}
 int main(void)
 {
     /* Board pin init */
@@ -85,6 +166,8 @@ int main(void)
 
     /* Set the PWM Fault inputs to a low value */
     XBARA_Init(XBARA);
+    XBARA_SetSignalsConnection(XBARA, kXBARA1_InputLogicHigh, kXBARA1_OutputFlexpwm1Fault0);
+    XBARA_SetSignalsConnection(XBARA, kXBARA1_InputLogicHigh, kXBARA1_OutputFlexpwm1Fault1);
     XBARA_SetSignalsConnection(XBARA, kXBARA1_InputLogicHigh, kXBARA1_OutputFlexpwm2Fault0);
     XBARA_SetSignalsConnection(XBARA, kXBARA1_InputLogicHigh, kXBARA1_OutputFlexpwm2Fault1);
     XBARA_SetSignalsConnection(XBARA, kXBARA1_InputLogicHigh, kXBARA1_OutputFlexpwm12Fault2);
@@ -128,10 +211,13 @@ int main(void)
     //	ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
     //	uint32_t mCurPosValue;
 
+//    CAM_OV7670_DEMO();
+
     BH1730_test();
     double rth[2];
     float BH1730_light;
     ADC_DEMO();
+
     while (1)
     {
 

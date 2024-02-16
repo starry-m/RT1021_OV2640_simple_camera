@@ -232,6 +232,82 @@ void BOARD_InitBootPins(void);
 #define BOARD_ENET_RXER_SIGNAL                                                IN   /*!< Signal name */
 #define BOARD_ENET_RXER_CHANNEL                                               0U   /*!< Signal channel */
 
+/* GPIO_AD_B0_08 (number 100), ENET_TX_CLK/U11[9] */
+/* Routed pin properties */
+#define BOARD_ENET_TX_CLK_PERIPHERAL                                      LPI2C3   /*!< Peripheral name */
+#define BOARD_ENET_TX_CLK_SIGNAL                                             SCL   /*!< Signal name */
+
+/* GPIO_AD_B0_09 (number 99), ENET_RXD1/U11[15]/J17[3] */
+/* Routed pin properties */
+#define BOARD_ENET_RXD1_PERIPHERAL                                        LPI2C3   /*!< Peripheral name */
+#define BOARD_ENET_RXD1_SIGNAL                                               SDA   /*!< Signal name */
+
+/* GPIO_AD_B1_13 (number 76), CAN_STBY/J18[4] */
+/* Routed pin properties */
+#define BOARD_CAN_STBY_PERIPHERAL                                        FLEXIO1   /*!< Peripheral name */
+#define BOARD_CAN_STBY_SIGNAL                                                 IO   /*!< Signal name */
+#define BOARD_CAN_STBY_CHANNEL                                                2U   /*!< Signal channel */
+
+/* GPIO_AD_B1_06 (number 84), ENET_INT/U11[21]/J17[8] */
+/* Routed pin properties */
+#define BOARD_ENET_INT_PERIPHERAL                                        FLEXIO1   /*!< Peripheral name */
+#define BOARD_ENET_INT_SIGNAL                                                 IO   /*!< Signal name */
+#define BOARD_ENET_INT_CHANNEL                                                9U   /*!< Signal channel */
+
+/* GPIO_AD_B1_02 (number 90), SAI1_TX_SYNC/J19[10] */
+/* Routed pin properties */
+#define BOARD_CAM_PWDN_PERIPHERAL                                          GPIO1   /*!< Peripheral name */
+#define BOARD_CAM_PWDN_SIGNAL                                            gpio_io   /*!< Signal name */
+#define BOARD_CAM_PWDN_CHANNEL                                               18U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_CAM_PWDN_GPIO                                                GPIO1   /*!< GPIO peripheral base pointer */
+#define BOARD_CAM_PWDN_GPIO_PIN                                              18U   /*!< GPIO pin number */
+#define BOARD_CAM_PWDN_GPIO_PIN_MASK                                 (1U << 18U)   /*!< GPIO pin mask */
+#define BOARD_CAM_PWDN_PORT                                                GPIO1   /*!< PORT peripheral base pointer */
+#define BOARD_CAM_PWDN_PIN                                                   18U   /*!< PORT pin number */
+#define BOARD_CAM_PWDN_PIN_MASK                                      (1U << 18U)   /*!< PORT pin mask */
+
+/* GPIO_AD_B1_03 (number 89), SAI1_TXD/J19[9] */
+/* Routed pin properties */
+#define BOARD_CAM_RES_PERIPHERAL                                           GPIO1   /*!< Peripheral name */
+#define BOARD_CAM_RES_SIGNAL                                             gpio_io   /*!< Signal name */
+#define BOARD_CAM_RES_CHANNEL                                                19U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_CAM_RES_GPIO                                                 GPIO1   /*!< GPIO peripheral base pointer */
+#define BOARD_CAM_RES_GPIO_PIN                                               19U   /*!< GPIO pin number */
+#define BOARD_CAM_RES_GPIO_PIN_MASK                                  (1U << 19U)   /*!< GPIO pin mask */
+#define BOARD_CAM_RES_PORT                                                 GPIO1   /*!< PORT peripheral base pointer */
+#define BOARD_CAM_RES_PIN                                                    19U   /*!< PORT pin number */
+#define BOARD_CAM_RES_PIN_MASK                                       (1U << 19U)   /*!< PORT pin mask */
+
+/* GPIO_AD_B1_04 (number 88), AUD_INT */
+/* Routed pin properties */
+#define BOARD_CAM_VS_PERIPHERAL                                            GPIO1   /*!< Peripheral name */
+#define BOARD_CAM_VS_SIGNAL                                              gpio_io   /*!< Signal name */
+#define BOARD_CAM_VS_CHANNEL                                                 20U   /*!< Signal channel */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_CAM_VS_GPIO                                                  GPIO1   /*!< GPIO peripheral base pointer */
+#define BOARD_CAM_VS_GPIO_PIN                                                20U   /*!< GPIO pin number */
+#define BOARD_CAM_VS_GPIO_PIN_MASK                                   (1U << 20U)   /*!< GPIO pin mask */
+#define BOARD_CAM_VS_PORT                                                  GPIO1   /*!< PORT peripheral base pointer */
+#define BOARD_CAM_VS_PIN                                                     20U   /*!< PORT pin number */
+#define BOARD_CAM_VS_PIN_MASK                                        (1U << 20U)   /*!< PORT pin mask */
+
+/* GPIO_AD_B1_05 (number 87), SAI1_RXD */
+/* Routed pin properties */
+#define BOARD_CAM_HS_PERIPHERAL                                          FLEXIO1   /*!< Peripheral name */
+#define BOARD_CAM_HS_SIGNAL                                                   IO   /*!< Signal name */
+#define BOARD_CAM_HS_CHANNEL                                                 10U   /*!< Signal channel */
+
+/* GPIO_AD_B1_07 (number 83), SD0_VSELECT/J19[1] */
+/* Routed pin properties */
+#define BOARD_CAM_XCLK_PERIPHERAL                                           PWM1   /*!< Peripheral name */
+#define BOARD_CAM_XCLK_SIGNAL                                                  B   /*!< Signal name */
+#define BOARD_CAM_XCLK_CHANNEL                                                0U   /*!< Signal channel */
+
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

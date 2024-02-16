@@ -58,6 +58,52 @@ component:
  * BOARD_InitPeripherals functional group
  **********************************************************************************************************************/
 /***********************************************************************************************************************
+ * DMA0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'DMA0'
+- type: 'edma'
+- mode: 'basic'
+- custom_name_enabled: 'false'
+- type_id: 'edma_46976c94302ab714c0d335f519487c8a'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'DMA0'
+- config_sets:
+  - fsl_edma:
+    - common_settings:
+      - enableMinorLoopMapping: 'true'
+      - enableContinuousLinkMode: 'true'
+      - enableHaltOnError: 'true'
+      - ERCA: 'fixedPriority'
+      - enableDebugMode: 'false'
+    - dma_table:
+      - 0: []
+    - edma_channels: []
+    - errInterruptConfig:
+      - enableErrInterrupt: 'false'
+      - errorInterrupt:
+        - IRQn: 'DMA_ERROR_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+        - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const edma_config_t DMA0_config = {
+  .enableContinuousLinkMode = true,
+  .enableHaltOnError = true,
+  .enableRoundRobinArbitration = false,
+  .enableDebugMode = false
+};
+
+static void DMA0_init(void) {
+  /* DMA0 minor loop mapping */
+  EDMA_EnableMinorLoopMapping(DMA0_DMA_BASEADDR, true);
+}
+
+/***********************************************************************************************************************
  * NVIC initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -72,7 +118,8 @@ instance:
 - peripheral: 'NVIC'
 - config_sets:
   - nvic:
-    - interrupt_table: []
+    - interrupt_table:
+      - 0: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -730,6 +777,483 @@ static void ADC1_init(void) {
 }
 
 /***********************************************************************************************************************
+ * LPI2C3 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'LPI2C3'
+- type: 'lpi2c'
+- mode: 'master'
+- custom_name_enabled: 'false'
+- type_id: 'lpi2c_6b71962515c3208facfccd030afebc98'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'LPI2C3'
+- config_sets:
+  - main:
+    - clockSource: 'Lpi2cClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+  - interrupt_vector: []
+  - master:
+    - mode: 'polling'
+    - config:
+      - enableMaster: 'true'
+      - enableDoze: 'true'
+      - debugEnable: 'false'
+      - ignoreAck: 'false'
+      - pinConfig: 'kLPI2C_2PinOpenDrain'
+      - baudRate_Hz: '100000'
+      - busIdleTimeout_ns: '0'
+      - pinLowTimeout_ns: '0'
+      - sdaGlitchFilterWidth_ns: '0'
+      - sclGlitchFilterWidth_ns: '0'
+      - hostRequest:
+        - enable: 'false'
+        - source: 'kLPI2C_HostRequestExternalPin'
+        - polarity: 'kLPI2C_HostRequestPinActiveHigh'
+      - edmaRequestSources: ''
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const lpi2c_master_config_t LPI2C3_masterConfig = {
+  .enableMaster = true,
+  .enableDoze = true,
+  .debugEnable = false,
+  .ignoreAck = false,
+  .pinConfig = kLPI2C_2PinOpenDrain,
+  .baudRate_Hz = 100000UL,
+  .busIdleTimeout_ns = 0UL,
+  .pinLowTimeout_ns = 0UL,
+  .sdaGlitchFilterWidth_ns = 0U,
+  .sclGlitchFilterWidth_ns = 0U,
+  .hostRequest = {
+    .enable = false,
+    .source = kLPI2C_HostRequestExternalPin,
+    .polarity = kLPI2C_HostRequestPinActiveHigh
+  }
+};
+
+static void LPI2C3_init(void) {
+  LPI2C_MasterInit(LPI2C3_PERIPHERAL, &LPI2C3_masterConfig, LPI2C3_CLOCK_FREQ);
+}
+
+/***********************************************************************************************************************
+ * GPIO1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO1'
+- type: 'igpio_adapter'
+- mode: 'GPIO'
+- custom_name_enabled: 'false'
+- type_id: 'igpio_adapter_5c0a3d4fd4d107e507335b7419af3b4f'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO1'
+- config_sets:
+  - fsl_adapter_gpio:
+    - signalsFilter: 'default boot'
+    - gpioSignalsParameters:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
+      - 4: []
+      - 5: []
+      - 6: []
+      - 7: []
+    - gpioPinsOverView:
+      - 0: []
+      - 1: []
+      - 2: []
+      - 3: []
+    - gpioPinsConfig:
+      - 0:
+        - pin_selection: 'gpio_io.20'
+        - userPinId: ''
+        - funtionalGroupEnum: 'BOARD_InitPins'
+        - setCallbackFnc: 'true'
+        - callbackFncCfg:
+          - functionName: 'defaultFunctionName'
+          - userData: ''
+    - globalCfg: []
+    - differentPeripheralsAdd: []
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+GPIO_HANDLE_DEFINE(BOARD_USER_LED_handle);
+GPIO_HANDLE_DEFINE(BOARD_CAM_PWDN_handle);
+GPIO_HANDLE_DEFINE(BOARD_CAM_RES_handle);
+GPIO_HANDLE_DEFINE(BOARD_CAM_VS_handle);
+
+static void GPIO1_init(void) {
+  /* GPIO adapter initialization */
+  static hal_gpio_pin_config_t gpioPinConfig;
+  hal_gpio_status_t status;
+  (void)status; // suppress warning in the run configuration
+  /* gpio_io, 05 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_USER_LED_PORT, BOARD_USER_LED_PIN, BOARD_USER_LED_PIN_DIRECTION, BOARD_USER_LED_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_USER_LED_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* gpio_io, 18 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_CAM_PWDN_PORT, BOARD_CAM_PWDN_PIN, BOARD_CAM_PWDN_PIN_DIRECTION, BOARD_CAM_PWDN_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_CAM_PWDN_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* gpio_io, 19 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_CAM_RES_PORT, BOARD_CAM_RES_PIN, BOARD_CAM_RES_PIN_DIRECTION, BOARD_CAM_RES_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_CAM_RES_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  /* gpio_io, 20 signal initialization */
+  gpioPinConfig = createAdapterGpioPinConfig(BOARD_CAM_VS_PORT, BOARD_CAM_VS_PIN, BOARD_CAM_VS_PIN_DIRECTION, BOARD_CAM_VS_PIN_LEVEL);
+  status = HAL_GpioInit(BOARD_CAM_VS_handle, &gpioPinConfig);
+  assert(status == kStatus_HAL_GpioSuccess);
+  status = HAL_GpioInstallCallback(BOARD_CAM_VS_handle, BOARD_CAM_VS_callback, NULL);
+  assert(status == kStatus_HAL_GpioSuccess);
+  status = HAL_GpioSetTriggerMode(BOARD_CAM_VS_handle, BOARD_CAM_VS_TRIGGER_MODE);
+  assert(status == kStatus_HAL_GpioSuccess);
+}
+
+/***********************************************************************************************************************
+ * PWM1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'PWM1'
+- type: 'pwm'
+- mode: 'general'
+- custom_name_enabled: 'false'
+- type_id: 'pwm_3d4233561d9e621ebdcd737703a67bfd'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'PWM1'
+- config_sets:
+  - fsl_pwm:
+    - clockSource: 'SystemClock'
+    - clockSourceFreq: 'custom:48 MHz'
+    - submodules:
+      - 0:
+        - sm: 'kPWM_Module_0'
+        - sm_id: 'SM0'
+        - config:
+          - clockSource: 'kPWM_BusClock'
+          - prescale: 'kPWM_Prescale_Divide_1'
+          - pwmFreq: '12MHZ'
+          - pairOperation: 'kPWM_Independent'
+          - operationMode: 'kPWM_SignedCenterAligned'
+          - initializationControl: 'kPWM_Initialize_LocalSync'
+          - reloadLogic: 'kPWM_ReloadImmediate'
+          - reloadSelect: 'kPWM_LocalReload'
+          - reloadFrequency: 'kPWM_LoadEveryOportunity'
+          - forceTrigger: 'kPWM_Force_Local'
+          - enableDebugMode: 'false'
+          - outputTrigger_sel: ''
+          - loadOK: 'false'
+          - startCounter: 'false'
+          - interrupt_sel: ''
+          - dma_used: 'false'
+          - dma:
+            - pwmDMA_activate: 'false'
+            - captureDMA_enable: ''
+            - captureDMA_source: 'kPWM_DMARequestDisable'
+            - captureDMA_watermark_control: 'kPWM_FIFOWatermarksOR'
+        - channels:
+          - 0:
+            - channel_id: 'A'
+            - functionSel: 'notUsed'
+          - 1:
+            - channel_id: 'B'
+            - functionSel: 'pwmOutput'
+            - pwm:
+              - dutyCyclePercent: '50'
+              - level: 'kPWM_HighTrue'
+              - fault_channel0:
+                - dismap: 'kPWM_FaultDisable_0 kPWM_FaultDisable_1 kPWM_FaultDisable_2 kPWM_FaultDisable_3'
+                - quick_selection: 'default'
+              - faultState: 'kPWM_PwmFaultState0'
+              - pwmchannelenable: 'true'
+              - deadtime_input_by_force: 'kPWM_UsePwm'
+              - clockSource: 'kPWM_BusClock'
+              - deadtimeValue: '0'
+              - interrupt_sel: ''
+          - 2:
+            - channel_id: 'X'
+            - functionSel: 'notUsed'
+        - common_interruptEn: 'false'
+        - common_interrupt:
+          - IRQn: 'PWM1_0_IRQn'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'false'
+          - priority: '0'
+          - enable_custom_name: 'false'
+    - faultChannels:
+      - 0:
+        - commonFaultSetting:
+          - clockSource: 'kPWM_BusClock'
+          - faultFilterPeriod: '1'
+          - faultFilterCount: '3'
+          - faultGlitchStretch: 'false'
+        - faults:
+          - 0:
+            - fault_id: 'Fault0'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 1:
+            - fault_id: 'Fault1'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 2:
+            - fault_id: 'Fault2'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+          - 3:
+            - fault_id: 'Fault3'
+            - faultClearingMode: 'kPWM_Automatic'
+            - faultLevelR: 'low'
+            - enableCombinationalPathR: 'filtered'
+            - recoverMode: 'kPWM_NoRecovery'
+            - fault_int_source: 'false'
+    - fault_error_interruptEn: 'false'
+    - fault_error_interrupt:
+      - IRQn: 'PWM1_FAULT_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'false'
+      - priority: '0'
+      - enable_custom_name: 'false'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* PWM main configuration */
+pwm_config_t PWM1_SM0_config = {
+  .clockSource = kPWM_BusClock,
+  .prescale = kPWM_Prescale_Divide_1,
+  .pairOperation = kPWM_Independent,
+  .initializationControl = kPWM_Initialize_LocalSync,
+  .reloadLogic = kPWM_ReloadImmediate,
+  .reloadSelect = kPWM_LocalReload,
+  .reloadFrequency = kPWM_LoadEveryOportunity,
+  .forceTrigger = kPWM_Force_Local,
+  .enableDebugMode = false,
+};
+
+pwm_signal_param_t PWM1_SM0_pwm_function_config[1]= {
+  {
+    .pwmChannel = kPWM_PwmB,
+    .dutyCyclePercent = 50U,
+    .level = kPWM_HighTrue,
+    .faultState = kPWM_PwmFaultState0,
+    .pwmchannelenable = true,
+    .deadtimeValue = 0U
+  },
+};
+
+const pwm_fault_input_filter_param_t PWM1_faultInputFilter_config = {
+  .faultFilterPeriod = 1U,
+  .faultFilterCount = 3U,
+  .faultGlitchStretch = false
+};
+const pwm_fault_param_t PWM1_Fault0_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t PWM1_Fault1_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t PWM1_Fault2_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+const pwm_fault_param_t PWM1_Fault3_fault_config = {
+  .faultClearingMode = kPWM_Automatic,
+  .faultLevel = false,
+  .enableCombinationalPath = true,
+  .recoverMode = kPWM_NoRecovery
+};
+
+static void PWM1_init(void) {
+  /* Initialize PWM submodule SM0 main configuration */
+  PWM_Init(PWM1_PERIPHERAL, PWM1_SM0, &PWM1_SM0_config);
+  /* Initialize fault input filter configuration */
+  PWM_SetupFaultInputFilter(PWM1_PERIPHERAL, &PWM1_faultInputFilter_config);
+  /* Initialize fault channel 0 fault Fault0 configuration */
+  PWM_SetupFaults(PWM1_PERIPHERAL, PWM1_F0_FAULT0, &PWM1_Fault0_fault_config);
+  /* Initialize fault channel 0 fault Fault1 configuration */
+  PWM_SetupFaults(PWM1_PERIPHERAL, PWM1_F0_FAULT1, &PWM1_Fault1_fault_config);
+  /* Initialize fault channel 0 fault Fault2 configuration */
+  PWM_SetupFaults(PWM1_PERIPHERAL, PWM1_F0_FAULT2, &PWM1_Fault2_fault_config);
+  /* Initialize fault channel 0 fault Fault3 configuration */
+  PWM_SetupFaults(PWM1_PERIPHERAL, PWM1_F0_FAULT3, &PWM1_Fault3_fault_config);
+  /* Initialize submodule SM0 channel B output disable mapping to the selected faults */
+  PWM_SetupFaultDisableMap(PWM1_PERIPHERAL, PWM1_SM0, PWM1_SM0_B, kPWM_faultchannel_0, (kPWM_FaultDisable_0 | kPWM_FaultDisable_1 | kPWM_FaultDisable_2 | kPWM_FaultDisable_3));
+  /* Initialize deadtime logic input for the channel B */
+  PWM_SetupForceSignal(PWM1_PERIPHERAL, PWM1_SM0, PWM1_SM0_B, kPWM_UsePwm);
+  /* Setup PWM output setting for submodule SM0 */
+  PWM_SetupPwm(PWM1_PERIPHERAL, PWM1_SM0, PWM1_SM0_pwm_function_config, 1U, kPWM_SignedCenterAligned, PWM1_SM0_COUNTER_FREQ_HZ, PWM1_SM0_SM_CLK_SOURCE_FREQ_HZ);
+}
+
+/***********************************************************************************************************************
+ * PIT initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'PIT'
+- type: 'pit'
+- mode: 'LPTMR_GENERAL'
+- custom_name_enabled: 'false'
+- type_id: 'pit_ab54f91356454adb874dafbb69e655fd'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'PIT'
+- config_sets:
+  - fsl_pit:
+    - enableRunInDebug: 'false'
+    - enableSharedInterrupt: 'true'
+    - sharedInterrupt:
+      - IRQn: 'PIT_IRQn'
+      - enable_interrrupt: 'enabled'
+      - enable_priority: 'true'
+      - priority: '0'
+      - enable_custom_name: 'false'
+    - timingConfig:
+      - clockSource: 'BusInterfaceClock'
+      - clockSourceFreq: 'ClocksTool_DefaultInit'
+    - channels:
+      - 0:
+        - channel_id: 'CHANNEL_0'
+        - channelNumber: '0'
+        - enableChain: 'false'
+        - timerPeriod: '1KHZ'
+        - startTimer: 'true'
+        - enableInterrupt: 'true'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const pit_config_t PIT_config = {
+  .enableRunInDebug = false
+};
+
+static void PIT_init(void) {
+  /* Initialize the PIT. */
+  PIT_Init(PIT_PERIPHERAL, &PIT_config);
+  /* Set channel 0 period to 1 ms (62500 ticks). */
+  PIT_SetTimerPeriod(PIT_PERIPHERAL, PIT_CHANNEL_0, PIT_CHANNEL_0_TICKS);
+  /* Enable interrupts from channel 0. */
+  PIT_EnableInterrupts(PIT_PERIPHERAL, PIT_CHANNEL_0, kPIT_TimerInterruptEnable);
+  /* Interrupt vector PIT_IRQN priority settings in the NVIC */
+  NVIC_SetPriority(PIT_IRQN, PIT_IRQ_PRIORITY);
+  /* Enable interrupt PIT_IRQN request in the NVIC */
+  EnableIRQ(PIT_IRQN);
+  /* Start channel 0. */
+  PIT_StartTimer(PIT_PERIPHERAL, PIT_CHANNEL_0);
+}
+
+/***********************************************************************************************************************
+ * FLEXIO1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'FLEXIO1'
+- type: 'flexio_camera'
+- mode: 'edma'
+- custom_name_enabled: 'false'
+- type_id: 'flexio_camera_fffc01254849b8169688688e2c6e3d96'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXIO1'
+- config_sets:
+  - fsl_flexio_camera:
+    - clockSource: 'FlexIoClock'
+    - clockSourceFreq: 'ClocksTool_DefaultInit'
+    - peripheralConfig:
+      - dataFlexIOCPIBusWidth: '8'
+      - dataPinStartIndex: '0'
+      - pclkPinIndex: '9'
+      - hrefPinIndex: '10'
+      - receiver_shifter_index: '7'
+      - shifterCountI: '8'
+      - timerIndex: '0'
+    - config:
+      - enableCameraB: 'true'
+      - enableInDozeB: 'false'
+      - enableInDebugB: 'true'
+      - enableFastAccessB: 'false'
+    - isCameraFormatEnabled: 'true'
+    - camera_config:
+      - pixelFormat: 'kVIDEO_PixelFormatRGB565'
+      - i_width: '160'
+      - i_height: '128'
+      - buffers_config:
+        - bufferName: 'defaultBuffer'
+        - bufCount: '2'
+        - bufferAlign: '32'
+    - rx_group:
+      - edma_group:
+        - enable_edma_channel: 'true'
+        - edma_channel:
+          - uid: '1708083583637'
+          - eDMAn: '0'
+          - eDMA_source: 'kDmaRequestMuxFlexIO1Request0Request1'
+          - enableTriggerPIT: 'false'
+          - init_channel_priority: 'false'
+          - edma_channel_Preemption:
+            - enableChannelPreemption: 'false'
+            - enablePreemptAbility: 'false'
+            - channelPriority: '0'
+          - enable_custom_name: 'false'
+        - camera_edma_handle:
+          - enable_custom_name: 'false'
+          - init_callback: 'true'
+          - callback_fcn: 'CAM_DMA_COMPLETE'
+          - user_data: ''
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+/* Frame buffer block allocation */
+AT_NONCACHEABLE_SECTION_ALIGN(uint16_t FLEXIO1_Camera_Buffer[FLEXIO1_FRAME_BUFFER_COUNT][FLEXIO1_FRAME_HEIGHT][FLEXIO1_FRAME_WIDTH], FLEXIO1_BUFFER_ALIGN);
+/* FlexIO peripheral configuration */
+FLEXIO_CAMERA_Type FLEXIO1_peripheralConfig = {
+  .flexioBase = FLEXIO1_PERIPHERAL,
+  .datPinStartIdx = 0,
+  .pclkPinIdx = 9,
+  .hrefPinIdx = 10,
+  .shifterStartIdx = 0,
+  .shifterCount = 8,
+  .timerIdx = 0
+};
+/* Camera configuration */
+flexio_camera_config_t FLEXIO1_config = {
+  .enablecamera = true,
+  .enableInDoze = false,
+  .enableInDebug = true,
+  .enableFastAccess = false
+};
+edma_handle_t FLEXIO1_FLEXIO_0_Handle;
+flexio_camera_edma_handle_t FLEXIO1_Camera_eDMA_Handle;
+
+static void FLEXIO1_init(void) {
+  /* Set the source kDmaRequestMuxFlexIO1Request0Request1 request in the DMAMUX */
+  DMAMUX_SetSource(FLEXIO1_FLEXIO_0_DMAMUX_BASEADDR, FLEXIO1_FLEXIO_0_DMA_CHANNEL, FLEXIO1_FLEXIO_0_DMA_REQUEST);
+  /* Enable the channel 0 in the DMAMUX */
+  DMAMUX_EnableChannel(FLEXIO1_FLEXIO_0_DMAMUX_BASEADDR, FLEXIO1_FLEXIO_0_DMA_CHANNEL);
+  /* Create the eDMA FLEXIO1_FLEXIO_0_Handle handle */
+  EDMA_CreateHandle(&FLEXIO1_FLEXIO_0_Handle, FLEXIO1_FLEXIO_0_DMA_BASEADDR, FLEXIO1_FLEXIO_0_DMA_CHANNEL);
+  /* Camera initialization */
+  FLEXIO_CAMERA_Init(&FLEXIO1_peripheralConfig, &FLEXIO1_config);
+  /* Create the Camera Rx eDMA handle */
+  FLEXIO_CAMERA_TransferCreateHandleEDMA(&FLEXIO1_peripheralConfig, &FLEXIO1_Camera_eDMA_Handle, CAM_DMA_COMPLETE, NULL, &FLEXIO1_FLEXIO_0_Handle);
+}
+
+/***********************************************************************************************************************
  * DebugConsole initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -781,10 +1305,13 @@ static void DebugConsole_init(void) {
 void BOARD_InitPeripherals(void)
 {
   /* Global initialization */
+  DMAMUX_Init(DMA0_DMAMUX_BASEADDR);
+  EDMA_Init(DMA0_DMA_BASEADDR, &DMA0_config);
   /* GPIO adapter pre-initialization */
   HAL_GpioPreInit();
 
   /* Initialize components */
+  DMA0_init();
   LPSPI4_init();
   LPSPI2_init();
   LPI2C1_init();
@@ -792,6 +1319,11 @@ void BOARD_InitPeripherals(void)
   GPIO2_init();
   ENC1_init();
   ADC1_init();
+  LPI2C3_init();
+  GPIO1_init();
+  PWM1_init();
+  PIT_init();
+  FLEXIO1_init();
   DebugConsole_init();
 }
 

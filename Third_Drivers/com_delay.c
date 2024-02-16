@@ -49,7 +49,7 @@ void led_state_set(uint8_t mled, uint8_t state)
     }
 }
 
-static LPI2C_Type *base[] = {LPI2C1_PERIPHERAL};
+static LPI2C_Type *base[] = {LPI2C1_PERIPHERAL,LPI2C3_PERIPHERAL};
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      写入一个字节数据到I2C设备指定寄存器地址
 //  @param      iic_n       IIC模块(IIC_1,IIC_2,IIC_3,IIC_4)

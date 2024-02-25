@@ -27,6 +27,9 @@
 
 
 #include "camera.h"
+
+#include "fsl_sd_disk.h"
+#include "sdmmc_config.h"
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -137,52 +140,7 @@ void ADC_DEMO()
 #define DMA_TRSF_SIZE           8u          /* 8 bytes */
 #define DMA_MINOR_LOOP_SIZE     16u         /* 16 bytes */
 #define DMA_MAJOR_LOOP_SIZE     (OV7670_FRAME_BYTES / DMA_MINOR_LOOP_SIZE)
-static void configDMA(void)
-{
-    uint32_t soff, smod = 0u, size=0u;
 
-    while(1u << size < DMA_TRSF_SIZE) /* size = log2(DMA_TRSF_SIZE) */
-    {
-        size++;
-    }
-
-    if(DMA_TRSF_SIZE == DMA_MINOR_LOOP_SIZE)
-    {
-        soff = 0u;
-    }
-    else
-    {
-        soff = DMA_TRSF_SIZE;
-        while(1u << smod < DMA_MINOR_LOOP_SIZE) /* smod = log2(DMA_MINOR_LOOP_SIZE) */
-        {
-            smod++;
-        }
-    }
-
-    /* Configure DMA TCD */
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SADDR = FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SOFF = soff;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].ATTR = DMA_ATTR_SMOD(smod) |
-                                            DMA_ATTR_SSIZE(size) |
-                                            DMA_ATTR_DMOD(0u) |
-                                            DMA_ATTR_DSIZE(size);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].NBYTES_MLNO = DMA_MINOR_LOOP_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SLAST = 0u;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DADDR = (uint32_t)(*FLEXIO1_Camera_Buffer[0]);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DOFF = DMA_TRSF_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DLAST_SGA = -OV7670_FRAME_BYTES;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR = 0u;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR |= DMA_CSR_DREQ_MASK;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].BITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
-
-    /* Configure DMA MUX Source */
-    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] = DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] &
-                                            (~DMAMUX_CHCFG_SOURCE_MASK) |
-                                            DMAMUX_CHCFG_SOURCE(FLEXIO_CAMERA_DMA_MUX_SRC);
-    /* Enable DMA channel. */
-    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] |= DMAMUX_CHCFG_ENBL_MASK;
-}
 
 void CAM_OV7670_DEMO()
 {
@@ -260,7 +218,213 @@ void CAM_OV7670_DEMO()
 
     }
 }
+void FATFS_DiskInit(void)
+{
+//	extern void BOARD_SD_Config(void *card, sd_cd_t cd, uint32_t hostIRQPriority, void *userData);
+	 BOARD_SD_Config(&g_sd, NULL, BOARD_SDMMC_SD_HOST_IRQ_PRIORITY, NULL);
 
+	/* SD host init function */
+	if (SD_HostInit(&g_sd) != kStatus_Success)
+	{
+		PRINTF("\r\nSD host init fail\r\n");
+//	        return kStatus_Fail;
+	}
+
+	/* wait card insert */
+	if (SD_PollingCardInsert(&g_sd, kSD_Inserted) == kStatus_Success)
+	{
+		PRINTF("\r\nCard inserted.\r\n");
+		/* power off card */
+		SD_SetCardPower(&g_sd, false);
+		/* power on the card */
+		SD_SetCardPower(&g_sd, true);
+	}
+	else
+	{
+		PRINTF("\r\nCard detect fail.\r\n");
+//	        return kStatus_Fail;
+	}
+
+//	f_mount(&FATFS_System_0, (const TCHAR*)"2:", 1)
+	if (f_mount(&FATFS_System_0, (const TCHAR*)"2:", 1))
+	{
+		PRINTF("Mount volume failed.\r\n");
+
+	}
+//	PRINTF("Mount success.\r\n");
+//	    return kStatus_Success;
+}
+static FIL g_fileObject;
+#define BUFFER_SIZE (513U)
+/*! @brief Data written to the card */
+SDK_ALIGN(uint8_t g_bufferWrite[BUFFER_SIZE], BOARD_SDMMC_DATA_BUFFER_ALIGN_SIZE);
+/*! @brief Data read from the card */
+SDK_ALIGN(uint8_t g_bufferRead[BUFFER_SIZE], BOARD_SDMMC_DATA_BUFFER_ALIGN_SIZE);
+int SD_operate_demo()
+{
+	FRESULT error;
+	DIR directory; /* Directory object */
+	FILINFO fileInformation;
+    UINT bytesWritten;
+    UINT bytesRead;
+    volatile bool failedFlag           = false;
+    char ch                            = '0';
+    BYTE work[FF_MAX_SS];
+    const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
+
+#if (FF_FS_RPATH >= 2U)
+    error = f_chdrive((char const *)&driverNumberBuffer[0U]);
+    if (error)
+    {
+        PRINTF("Change drive failed.\r\n");
+        return -1;
+    }
+#endif
+
+//#if FF_USE_MKFS
+//    PRINTF("\r\nMake file system......The time may be long if the card capacity is big.\r\n");
+//    if (f_mkfs(driverNumberBuffer, 0, work, sizeof work))
+//    {
+//        PRINTF("Make file system failed.\r\n");
+//        return -1;
+//    }
+//#endif /* FF_USE_MKFS */
+
+	PRINTF("\r\nCreate directory......\r\n");
+	error = f_mkdir(_T("/m_dir"));
+	if (error)
+	{
+		if (error == FR_EXIST)
+		{
+			PRINTF("Directory exists.\r\n");
+		}
+		else
+		{
+			PRINTF("Make directory failed.\r\n");
+			return -1;
+		}
+	}
+
+    PRINTF("\r\nCreate a file in that directory......\r\n");
+    error = f_open(&g_fileObject, _T("/m_dir/f_1.dat"), (FA_WRITE | FA_READ | FA_CREATE_ALWAYS));
+    if (error)
+    {
+        if (error == FR_EXIST)
+        {
+            PRINTF("File exists.\r\n");
+        }
+        else
+        {
+            PRINTF("Open file failed.\r\n");
+            return -1;
+        }
+    }
+
+    PRINTF("\r\nCreate a directory in that directory......\r\n");
+        error = f_mkdir(_T("/m_dir/dir_2"));
+        if (error)
+        {
+            if (error == FR_EXIST)
+            {
+                PRINTF("Directory exists.\r\n");
+            }
+            else
+            {
+                PRINTF("Directory creation failed.\r\n");
+                return -1;
+            }
+        }
+
+        PRINTF("\r\nList the file in that directory......\r\n");
+        if (f_opendir(&directory, "/m_dir"))
+        {
+            PRINTF("Open directory failed.\r\n");
+            return -1;
+        }
+
+        for (;;)
+        {
+            error = f_readdir(&directory, &fileInformation);
+
+            /* To the end. */
+            if ((error != FR_OK) || (fileInformation.fname[0U] == 0U))
+            {
+                break;
+            }
+            if (fileInformation.fname[0] == '.')
+            {
+                continue;
+            }
+            if (fileInformation.fattrib & AM_DIR)
+            {
+                PRINTF("Directory file : %s.\r\n", fileInformation.fname);
+            }
+            else
+            {
+                PRINTF("General file : %s.\r\n", fileInformation.fname);
+            }
+        }
+        memset(g_bufferWrite, 'a', sizeof(g_bufferWrite));
+        g_bufferWrite[BUFFER_SIZE - 2U] = '\r';
+        g_bufferWrite[BUFFER_SIZE - 1U] = '\n';
+
+        PRINTF("\r\nWrite/read file until encounters error......\r\n");
+        while (true)
+        {
+            if (failedFlag || (ch == 'q'))
+            {
+                break;
+            }
+
+            PRINTF("\r\nWrite to above created file.\r\n");
+            error = f_write(&g_fileObject, g_bufferWrite, sizeof(g_bufferWrite), &bytesWritten);
+            if ((error) || (bytesWritten != sizeof(g_bufferWrite)))
+            {
+                PRINTF("Write file failed. \r\n");
+                failedFlag = true;
+                continue;
+            }
+
+            /* Move the file pointer */
+            if (f_lseek(&g_fileObject, 0U))
+            {
+                PRINTF("Set file pointer position failed. \r\n");
+                failedFlag = true;
+                continue;
+            }
+
+            PRINTF("Read from above created file.\r\n");
+            memset(g_bufferRead, 0U, sizeof(g_bufferRead));
+            error = f_read(&g_fileObject, g_bufferRead, sizeof(g_bufferRead), &bytesRead);
+            if ((error) || (bytesRead != sizeof(g_bufferRead)))
+            {
+                PRINTF("Read file failed. \r\n");
+                failedFlag = true;
+                continue;
+            }
+
+            PRINTF("Compare the read/write content......\r\n");
+            if (memcmp(g_bufferWrite, g_bufferRead, sizeof(g_bufferWrite)))
+            {
+                PRINTF("Compare read/write content isn't consistent.\r\n");
+                failedFlag = true;
+                continue;
+            }
+            PRINTF("The read/write content is consistent.\r\n");
+
+            PRINTF("\r\nInput 'q' to quit read/write.\r\nInput other char to read/write file again.\r\n");
+            ch = GETCHAR();
+            PUTCHAR(ch);
+        }
+        PRINTF("\r\nThe example will not read/write file again.\r\n");
+
+        if (f_close(&g_fileObject))
+        {
+            PRINTF("\r\nClose file failed.\r\n");
+            return -1;
+        }
+
+}
 /*!
  * @brief Main function
  */
@@ -302,9 +466,10 @@ int main(void)
     //    testSPI();
     //    SysTick_DelayTicks(2U);
 
-    CAM_OV7670_DEMO();
+//    CAM_OV7670_DEMO();
 
-
+       SD_operate_demo();
+       while(1);
     extern void lsm6ds3tr_c_read_data_polling(void);
     //    lsm6ds3tr_c_read_data_polling();
 
@@ -375,7 +540,52 @@ int main(void)
         PWM_SetPwmLdok(PWM2, kPWM_Control_Module_0, true);
     }
 }
+static void configDMA(void)
+{
+    uint32_t soff, smod = 0u, size=0u;
 
+    while(1u << size < DMA_TRSF_SIZE) /* size = log2(DMA_TRSF_SIZE) */
+    {
+        size++;
+    }
+
+    if(DMA_TRSF_SIZE == DMA_MINOR_LOOP_SIZE)
+    {
+        soff = 0u;
+    }
+    else
+    {
+        soff = DMA_TRSF_SIZE;
+        while(1u << smod < DMA_MINOR_LOOP_SIZE) /* smod = log2(DMA_MINOR_LOOP_SIZE) */
+        {
+            smod++;
+        }
+    }
+
+    /* Configure DMA TCD */
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SADDR = FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SOFF = soff;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].ATTR = DMA_ATTR_SMOD(smod) |
+                                            DMA_ATTR_SSIZE(size) |
+                                            DMA_ATTR_DMOD(0u) |
+                                            DMA_ATTR_DSIZE(size);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].NBYTES_MLNO = DMA_MINOR_LOOP_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SLAST = 0u;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DADDR = (uint32_t)(*FLEXIO1_Camera_Buffer[0]);
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DOFF = DMA_TRSF_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DLAST_SGA = -OV7670_FRAME_BYTES;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR = 0u;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR |= DMA_CSR_DREQ_MASK;
+    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].BITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
+
+    /* Configure DMA MUX Source */
+    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] = DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] &
+                                            (~DMAMUX_CHCFG_SOURCE_MASK) |
+                                            DMAMUX_CHCFG_SOURCE(FLEXIO_CAMERA_DMA_MUX_SRC);
+    /* Enable DMA channel. */
+    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] |= DMAMUX_CHCFG_ENBL_MASK;
+}
 
 /*    EDMA_PrepareTransfer(&transferConfig,
         (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),

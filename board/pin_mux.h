@@ -308,6 +308,45 @@ void BOARD_InitBootPins(void);
 #define BOARD_CAM_XCLK_SIGNAL                                                  B   /*!< Signal name */
 #define BOARD_CAM_XCLK_CHANNEL                                                0U   /*!< Signal channel */
 
+/* GPIO_SD_B0_01 (number 47), SD1_D3/J15[2] */
+/* Routed pin properties */
+#define BOARD_SD1_D3_PERIPHERAL                                           USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_D3_SIGNAL                                           usdhc_data   /*!< Signal name */
+#define BOARD_SD1_D3_CHANNEL                                                  3U   /*!< Signal channel */
+
+/* GPIO_SD_B0_00 (number 48), SD1_D2/J15[1] */
+/* Routed pin properties */
+#define BOARD_SD1_D2_PERIPHERAL                                           USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_D2_SIGNAL                                           usdhc_data   /*!< Signal name */
+#define BOARD_SD1_D2_CHANNEL                                                  2U   /*!< Signal channel */
+
+/* GPIO_SD_B0_04 (number 43), SD1_D0/J15[7] */
+/* Routed pin properties */
+#define BOARD_SD1_D0_PERIPHERAL                                           USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_D0_SIGNAL                                           usdhc_data   /*!< Signal name */
+#define BOARD_SD1_D0_CHANNEL                                                  0U   /*!< Signal channel */
+
+/* GPIO_SD_B0_02 (number 46), SD1_CMD/J15[3] */
+/* Routed pin properties */
+#define BOARD_SD1_CMD_PERIPHERAL                                          USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_CMD_SIGNAL                                           usdhc_cmd   /*!< Signal name */
+
+/* GPIO_SD_B0_03 (number 45), SD1_CLK/J15[5] */
+/* Routed pin properties */
+#define BOARD_SD1_CLK_PERIPHERAL                                          USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_CLK_SIGNAL                                           usdhc_clk   /*!< Signal name */
+
+/* GPIO_SD_B0_05 (number 42), SD1_D1/J15[8] */
+/* Routed pin properties */
+#define BOARD_SD1_D1_PERIPHERAL                                           USDHC1   /*!< Peripheral name */
+#define BOARD_SD1_D1_SIGNAL                                           usdhc_data   /*!< Signal name */
+#define BOARD_SD1_D1_CHANNEL                                                  1U   /*!< Signal channel */
+
+/* GPIO_SD_B0_06 (number 41), SD_CD_SW/J15[9] */
+/* Routed pin properties */
+#define BOARD_SD_CD_SW_PERIPHERAL                                         USDHC1   /*!< Peripheral name */
+#define BOARD_SD_CD_SW_SIGNAL                                         usdhc_cd_b   /*!< Signal name */
+
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

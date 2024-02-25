@@ -668,7 +668,8 @@ int ov2640_init(framesize_t framesize)
 #define OV2640_Height         120//300  // 图像宽度
 	OV2640_Config( OV2640_SVGA_Config );
 	OV2640_Set_Framesize(OV2640_Width,OV2640_Height);
-
+		set_hmirror(0);
+		set_vflip(0);
   return 0;
 }
 

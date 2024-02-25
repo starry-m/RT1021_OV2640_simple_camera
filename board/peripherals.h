@@ -24,6 +24,8 @@
 #include "fsl_flexio_camera.h"
 #include "fsl_flexio_camera_edma.h"
 #include "fsl_debug_console.h"
+#include "ff.h"
+#include "diskio.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -246,6 +248,8 @@ extern FLEXIO_CAMERA_Type FLEXIO1_peripheralConfig;
 extern flexio_camera_config_t FLEXIO1_config;
 extern edma_handle_t FLEXIO1_FLEXIO_0_Handle;
 extern flexio_camera_edma_handle_t FLEXIO1_Camera_eDMA_Handle;
+/* FATFS System object */
+extern FATFS FATFS_System_0;
 
 /***********************************************************************************************************************
  * Global functions
@@ -260,6 +264,8 @@ hal_gpio_pin_config_t createAdapterGpioPinConfig(GPIO_Type *port, uint8_t pin, h
 extern void BOARD_CAM_VS_callback(void *param);
 /* FlexIO Camera transfer Rx callback function for the FLEXIO1 component (init. function BOARD_InitPeripherals)*/
 extern void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData);
+/* Extern function for the physical layer initialization*/
+extern void FATFS_DiskInit(void);
 
 /***********************************************************************************************************************
  * Initialization functions

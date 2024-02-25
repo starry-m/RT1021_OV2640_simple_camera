@@ -98,6 +98,20 @@ BOARD_InitPins:
   - {pin_num: '88', peripheral: GPIO1, signal: 'gpio_io, 20', pin_signal: GPIO_AD_B1_04, direction: INPUT, gpio_interrupt: kGPIO_IntRisingEdge, slew_rate: Fast}
   - {pin_num: '87', peripheral: FLEXIO1, signal: 'IO, 10', pin_signal: GPIO_AD_B1_05}
   - {pin_num: '83', peripheral: PWM1, signal: 'B, 0', pin_signal: GPIO_AD_B1_07, direction: OUTPUT}
+  - {pin_num: '47', peripheral: USDHC1, signal: 'usdhc_data, 3', pin_signal: GPIO_SD_B0_01, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '48', peripheral: USDHC1, signal: 'usdhc_data, 2', pin_signal: GPIO_SD_B0_00, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '43', peripheral: USDHC1, signal: 'usdhc_data, 0', pin_signal: GPIO_SD_B0_04, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '46', peripheral: USDHC1, signal: usdhc_cmd, pin_signal: GPIO_SD_B0_02, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '45', peripheral: USDHC1, signal: usdhc_clk, pin_signal: GPIO_SD_B0_03, slew_rate: Fast, drive_strength: R0, pull_keeper_enable: Disable, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '42', peripheral: USDHC1, signal: 'usdhc_data, 1', pin_signal: GPIO_SD_B0_05, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
+  - {pin_num: '41', peripheral: USDHC1, signal: usdhc_cd_b, pin_signal: GPIO_SD_B0_06, slew_rate: Fast, drive_strength: R0, pull_keeper_select: Pull, pull_up_down_config: Pull_Up_47K_Ohm,
+    hysteresis_enable: Enable}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -241,6 +255,13 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_36_GPIO3_IO04, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_37_LPSPI4_PCS2, 0U); 
   IOMUXC_SetPinMux(IOMUXC_GPIO_EMC_39_GPIO3_IO07, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_00_USDHC1_DATA2, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_01_USDHC1_DATA3, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_02_USDHC1_CMD, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_03_USDHC1_CLK, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_04_USDHC1_DATA0, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_05_USDHC1_DATA1, 0U); 
+  IOMUXC_SetPinMux(IOMUXC_GPIO_SD_B0_06_GPIO3_IO19, 0U);
   IOMUXC_GPR->GPR6 = ((IOMUXC_GPR->GPR6 &
     (~(IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7_MASK | IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_9_MASK))) 
       | IOMUXC_GPR_GPR6_IOMUXC_XBAR_DIR_SEL_7(0x00U) 
@@ -260,6 +281,13 @@ void BOARD_InitPins(void) {
   IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_04_GPIO1_IO20, 0x10B1U); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_EMC_02_LPI2C1_SCL, 0x18B0U); 
   IOMUXC_SetPinConfig(IOMUXC_GPIO_EMC_03_LPI2C1_SDA, 0x18B0U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_00_USDHC1_DATA2, 0x017089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_01_USDHC1_DATA3, 0x017089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_02_USDHC1_CMD, 0x017089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_03_USDHC1_CLK, 0x014089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_04_USDHC1_DATA0, 0x017089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_05_USDHC1_DATA1, 0x017089U); 
+  IOMUXC_SetPinConfig(IOMUXC_GPIO_SD_B0_06_GPIO3_IO19, 0x017089U);
 }
 /***********************************************************************************************************************
  * EOF

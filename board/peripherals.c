@@ -927,7 +927,7 @@ instance:
 - config_sets:
   - fsl_pwm:
     - clockSource: 'SystemClock'
-    - clockSourceFreq: 'custom:48 MHz'
+    - clockSourceFreq: 'custom:96MHz'
     - submodules:
       - 0:
         - sm: 'kPWM_Module_0'
@@ -935,7 +935,7 @@ instance:
         - config:
           - clockSource: 'kPWM_BusClock'
           - prescale: 'kPWM_Prescale_Divide_1'
-          - pwmFreq: '12MHZ'
+          - pwmFreq: '24MHZ'
           - pairOperation: 'kPWM_Independent'
           - operationMode: 'kPWM_SignedCenterAligned'
           - initializationControl: 'kPWM_Initialize_LocalSync'
@@ -1191,8 +1191,8 @@ instance:
     - isCameraFormatEnabled: 'true'
     - camera_config:
       - pixelFormat: 'kVIDEO_PixelFormatRGB565'
-      - i_width: '160'
-      - i_height: '128'
+      - i_width: '128'
+      - i_height: '160'
       - buffers_config:
         - bufferName: 'defaultBuffer'
         - bufCount: '2'

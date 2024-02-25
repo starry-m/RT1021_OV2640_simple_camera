@@ -66,11 +66,12 @@ void BOARD_CAM_VS_callback(void *param) {
 
 //	ov7670_finish_flag++;
     ov7670_frame_conter++;
+
 //	DMA0->TCD[0].DADDR = (uint32_t)FLEXIO1_Camera_Buffer[0];
 
 	 FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig,
 	                                   kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
-
+//	    ov7670_finish_flag=1;
     /* Enable DMA channel request. */
 //    DMA0->SERQ = DMA_SERQ_SERQ(0);
 	 FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
@@ -81,8 +82,8 @@ void BOARD_CAM_VS_callback(void *param) {
 void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData)
 {
 
-//	ov7670_finish_flag=1;
-	ov7670_finish_flag++;
+	ov7670_finish_flag=1;
+//	ov7670_finish_flag++;
     /* Enable DMA channel request. */
 //    DMA0->SERQ = DMA_SERQ_SERQ(FLEXIO_CAMERA_DMA_CHN);
 }
@@ -185,66 +186,78 @@ static void configDMA(void)
 
 void CAM_OV7670_DEMO()
 {
+//	for(uint8_t i=0;i<160;i++)
+//	{
+//		for(uint8_t j=0;j<128;j++)
+//		{
+//			FLEXIO1_Camera_Buffer[0][i][j]=ST7735_RED;
+//			ST7735_DrawPixel(i,j,FLEXIO1_Camera_Buffer[0][i][j]);
+//		}
+//	}
+////	ST7735_FillRGBRect(0,0,(uint8_t *)FLEXIO1_Camera_Buffer[0][0][0],128,160);
+//	PRINTF("FLEXIO1_Camera_Buffer[0][1][119]=%x\n",FLEXIO1_Camera_Buffer[0][1][119]);
+//	ST7735_WriteString(10,10,"hello",Font_11x18,0xff00,0x0000);
+//	PRINTF("temp OV7670 START\n");
+//    while(1)
+//    {
+//    	HAL_Delay(500);
+//    	PRINTF("dididid\n");
+//
+//    }
 	/* lcd init  */
 
 	/*camera ov7670 init ,12M XCLK,PWDN LOW,RST HIGH*/
 	GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
-	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
-	HAL_Delay(20);
+//	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
+//	HAL_Delay(20);
 	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 1U);
 
     /* Clear all the flag. */
     FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig, kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
-
     /* Enable FlexIO. */
     FLEXIO_CAMERA_Enable(&FLEXIO1_peripheralConfig, true);
 
-	Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA2);
-    /* Set the load okay bit for all submodules to load registers from their buffer */
-    PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
-    /* Start the PWM generation from Submodules 0, 1 and 2 */
-    PWM_StartTimer(PWM1, kPWM_Control_Module_0);
 	/*cam dma transfer start */
 
-
-/*    EDMA_PrepareTransfer(&transferConfig,
-        (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),
-        8,
-        (void *)(FLEXIO1_Camera_Buffer[0]),
-        8,
-        8*8,
-		FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT,
-        kEDMA_MemoryToMemory);
-
-
-        EDMA_SubmitTransfer(&FLEXIO1_FLEXIO_0_Handle, &transferConfig);
-
-//        switch(4*flexio_shift_count)
-//        {
-//            case 4:     s_addr_modulo = kEDMA_Modulo4bytes;break;
-//            case 8:     s_addr_modulo = kEDMA_Modulo8bytes;break;
-//            case 16:    s_addr_modulo = kEDMA_Modulo16bytes;break;
-//            case 32:    s_addr_modulo = kEDMA_Modulo32bytes;break;
-//            default:assert(0);  //参数有误
-//        }
-
-
-        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo64bytes,kEDMA_ModuloDisable);
-        EDMA_StartTransfer(&FLEXIO1_FLEXIO_0_Handle);
-//        configDMA();
-         Enable FlexIO DMA request.
-        FLEXIO_CAMERA_EnableRxDMA(&FLEXIO1_peripheralConfig, true);*/
     cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[0];
-    cam_xfer.dataNum=FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT;
+    cam_xfer.dataNum=2*FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT;
 
     FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
+    //// 160x120 x
+	Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA);
+	PRINTF("OV camera init ok\n");
+
+    /* Set the load okay bit for all submodules to load registers from their buffer */
+//    PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
+//    /* Start the PWM generation from Submodules 0, 1 and 2 */
+//    PWM_StartTimer(PWM1, kPWM_Control_Module_0);
+
+
+
     PRINTF("OV7670 START\n");
+//    PRINTF("FLEXIO1_Camera_Buffer[0][1][119]=%x\n",FLEXIO1_Camera_Buffer[0][20][60]);
+//    PRINTF("FLEXIO1_Camera_Buffer[0][100][60]=%x\n",FLEXIO1_Camera_Buffer[0][100][60]);
 	/*loop frame show*/
     while(1)
     {
-    	PRINTF("ov7670_finish_flag=%d,ov7670_frame_conter=%d\n",ov7670_finish_flag,ov7670_frame_conter);
-    	PRINTF("FLEXIO1_Camera_Buffer=%d\n",FLEXIO1_Camera_Buffer[0][10][10]);
-    	HAL_Delay(100);
+//    	PRINTF("ov7670_finish_flag=%d,ov7670_frame_conter=%d\n",ov7670_finish_flag,ov7670_frame_conter);
+//    	PRINTF("FLEXIO1_Camera_Buffer=%d\n",FLEXIO1_Camera_Buffer[0][10][10]);
+//    	HAL_Delay(100);
+    	if(ov7670_finish_flag)
+    	{
+    		ov7670_finish_flag=0;
+//    		 PRINTF("OV7670 frame get\n");
+    		ST7735_FillRGBRect(0,0,(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0],160,120);
+//    			for(uint8_t i=0;i<160;i++)
+//    			{
+//    				for(uint8_t j=0;j<128;j++)
+//    				{
+////    					FLEXIO1_Camera_Buffer[0][i][j]=ST7735_RED;
+//    					ST7735_DrawPixel(j,i,FLEXIO1_Camera_Buffer[0][i][j]);
+//    				}
+//    			}
+    	}
+
     }
 }
 
@@ -278,8 +291,8 @@ int main(void)
     }
     PRINTF("APP START !\n");
     //    PRINTF("float:%.2f\n", 3.145);
-//       ST7735_Init();
-//       ST7735_FillScreen(ST7735_BLUE);
+       ST7735_Init();
+       ST7735_FillScreen(ST7735_BLUE);
 //    	ST7735_Init();
 //    	ST7735_FillScreen(ST7735_BLUE);
 //    	ST7735_FillScreen(ST7735_RED);
@@ -362,3 +375,32 @@ int main(void)
         PWM_SetPwmLdok(PWM2, kPWM_Control_Module_0, true);
     }
 }
+
+
+/*    EDMA_PrepareTransfer(&transferConfig,
+        (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),
+        8,
+        (void *)(FLEXIO1_Camera_Buffer[0]),
+        8,
+        8*8,
+		FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT,
+        kEDMA_MemoryToMemory);
+
+
+        EDMA_SubmitTransfer(&FLEXIO1_FLEXIO_0_Handle, &transferConfig);
+
+//        switch(4*flexio_shift_count)
+//        {
+//            case 4:     s_addr_modulo = kEDMA_Modulo4bytes;break;
+//            case 8:     s_addr_modulo = kEDMA_Modulo8bytes;break;
+//            case 16:    s_addr_modulo = kEDMA_Modulo16bytes;break;
+//            case 32:    s_addr_modulo = kEDMA_Modulo32bytes;break;
+//            default:assert(0);  //参数有误
+//        }
+
+
+        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo64bytes,kEDMA_ModuloDisable);
+        EDMA_StartTransfer(&FLEXIO1_FLEXIO_0_Handle);
+//        configDMA();
+         Enable FlexIO DMA request.
+        FLEXIO_CAMERA_EnableRxDMA(&FLEXIO1_peripheralConfig, true);*/

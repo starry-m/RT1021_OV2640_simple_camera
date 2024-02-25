@@ -31,11 +31,11 @@
 // AliExpress/eBay 1.8" display, default orientation
 
 #define ST7735_IS_160X128 1
-#define ST7735_WIDTH  128
-#define ST7735_HEIGHT 160
+#define ST7735_WIDTH  160
+#define ST7735_HEIGHT 128
 #define ST7735_XSTART 2
 #define ST7735_YSTART 1
-#define ST7735_ROTATION (ST7735_MADCTL_MY | ST7735_MADCTL_MX)
+#define ST7735_ROTATION (ST7735_MADCTL_MV | ST7735_MADCTL_MX)//ST7735_MADCTL_MV
 
 
 // AliExpress/eBay 1.8" display, rotate right
@@ -267,6 +267,8 @@ void	LCD_CopyBuffer(uint16_t x, uint16_t y,uint16_t width,uint16_t height,uint16
 
 void ST7735_DrawRectangle(uint16_t x1, uint16_t y1,uint16_t x2, uint16_t y2, uint16_t color);
 void ST7735_DrawFilledCircle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color);
+
+int32_t ST7735_FillRGBRect( uint32_t Xpos, uint32_t Ypos, uint8_t *pData, uint32_t Width, uint32_t Height);
 
 #ifdef __cplusplus
 }

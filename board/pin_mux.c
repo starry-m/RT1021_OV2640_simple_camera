@@ -95,7 +95,7 @@ BOARD_InitPins:
   - {pin_num: '84', peripheral: FLEXIO1, signal: 'IO, 09', pin_signal: GPIO_AD_B1_06}
   - {pin_num: '90', peripheral: GPIO1, signal: 'gpio_io, 18', pin_signal: GPIO_AD_B1_02, direction: OUTPUT}
   - {pin_num: '89', peripheral: GPIO1, signal: 'gpio_io, 19', pin_signal: GPIO_AD_B1_03, direction: OUTPUT}
-  - {pin_num: '88', peripheral: GPIO1, signal: 'gpio_io, 20', pin_signal: GPIO_AD_B1_04, direction: INPUT, gpio_interrupt: kGPIO_IntFallingEdge, slew_rate: Fast}
+  - {pin_num: '88', peripheral: GPIO1, signal: 'gpio_io, 20', pin_signal: GPIO_AD_B1_04, direction: INPUT, gpio_interrupt: kGPIO_IntRisingEdge, slew_rate: Fast}
   - {pin_num: '87', peripheral: FLEXIO1, signal: 'IO, 10', pin_signal: GPIO_AD_B1_05}
   - {pin_num: '83', peripheral: PWM1, signal: 'B, 0', pin_signal: GPIO_AD_B1_07, direction: OUTPUT}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
@@ -143,7 +143,7 @@ void BOARD_InitPins(void) {
   gpio_pin_config_t CAM_VS_config = {
       .direction = kGPIO_DigitalInput,
       .outputLogic = 0U,
-      .interruptMode = kGPIO_IntFallingEdge
+      .interruptMode = kGPIO_IntRisingEdge
   };
   /* Initialize GPIO functionality on GPIO_AD_B1_04 (pin 88) */
   GPIO_PinInit(GPIO1, 20U, &CAM_VS_config);

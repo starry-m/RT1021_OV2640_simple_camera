@@ -116,6 +116,7 @@ int32_t Camera_ReadReg(Camera_HandleTypeDef *hov, uint8_t regAddr, uint8_t *pDat
 
 
 	    return Camera_OK;
+
 }
 
 int32_t Camera_WriteRegb2(Camera_HandleTypeDef *hov, uint16_t reg_addr, uint8_t reg_data)
@@ -143,7 +144,29 @@ int32_t Camera_ReadRegb2(Camera_HandleTypeDef *hov, uint16_t reg_addr, uint8_t *
 //	{
 //		return camera_ERROR;
 //	}
+	 status_t reVal = kStatus_Fail;
+	 uint8_t reg_read_addr[2]={reg_addr>>8,reg_addr&0xff};
+	reVal = LPI2C_MasterStart(hov->hi2c,hov->addr, kLPI2C_Write);
+	if (reVal != kStatus_Success)
+		return kStatus_Fail;
+	while (LPI2C_MasterGetStatusFlags(hov->hi2c) & kLPI2C_MasterNackDetectFlag)
+		;
 
+	reVal = LPI2C_MasterSend(hov->hi2c, reg_read_addr, 2);
+	if (reVal != kStatus_Success)
+		return kStatus_Fail;
+
+	reVal = LPI2C_MasterRepeatedStart(hov->hi2c, hov->addr, kLPI2C_Read);
+	if (reVal != kStatus_Success)
+		return kStatus_Fail;
+
+	reVal = LPI2C_MasterReceive(hov->hi2c, reg_data, 1);
+	if (reVal != kStatus_Success)
+		return kStatus_Fail;
+
+	reVal = LPI2C_MasterStop(hov->hi2c);
+	if (reVal != kStatus_Success)
+		return kStatus_Fail;
 	return Camera_OK;
 }
 
@@ -168,12 +191,26 @@ int32_t Camera_read_id(Camera_HandleTypeDef *hov)
 	temp[0] = 0x01;
 	if (hov->addr != OV5640_ADDRESS)
 	{
+//		Camera_WriteReg(hov, 0xFF, temp);
+//		Camera_ReadReg(hov, 0x1C, &temp[0]);
+//		Camera_ReadReg(hov, 0x1D, &temp[1]);
+//		hov->manuf_id = ((uint16_t)temp[0] << 8) | temp[1];
+
+//		Camera_ReadReg(hov, 0x0A, &temp[0]);
+//		Camera_ReadReg(hov, 0x0B, &temp[1]);
+//		PRINTF("temp[0]=%x \n",temp[0]);
+//		hov->manuf_id = ((uint16_t)temp[0] << 8) | temp[1];
+//		Camera_ReadReg(hov, 0x0A, &temp[0]);
+//		Camera_ReadReg(hov, 0x0B, &temp[1]);
+//		PRINTF("temp[0]=%x \n",temp[0]);
+
 		Camera_WriteReg(hov, 0xFF, temp);
-		Camera_ReadReg(hov, 0x1C, &temp[0]);
-		Camera_ReadReg(hov, 0x1D, &temp[1]);
-		hov->manuf_id = ((uint16_t)temp[0] << 8) | temp[1];
+//		Camera_ReadReg(hov, 0x1C, &temp[0]);
+//		Camera_ReadReg(hov, 0x1D, &temp[1]);
 		Camera_ReadReg(hov, 0x0A, &temp[0]);
 		Camera_ReadReg(hov, 0x0B, &temp[1]);
+		hov->manuf_id = ((uint16_t)temp[0] << 8) | temp[1];
+
 	}
 	else
 	{
@@ -279,25 +316,42 @@ void Camera_XCLK_Set(uint8_t xclktype)
 void Camera_Init_Device(LPI2C_Type *hi2c, framesize_t framesize)
 {
 	hcamera.hi2c = hi2c;
-	hcamera.addr = OV7670_ADDRESS;
+//	hcamera.addr =0X21 ;//   0X21
 	hcamera.timeout = 100;
 
-	Camera_read_id(&hcamera);
-	if (hcamera.manuf_id == 0x7fa2 && hcamera.device_id == 0x7673)
-		OV7670_Config();
-	else
+//	int ov_reset_result = OV7670_Reset();
+//	if (ov_reset_result != 0)
+//	{
+//		PRINTF("ERROR OV\n");
+//	}
+
+//	Camera_read_id(&hcamera);
+//
+//	PRINTF("id=%x \n",hcamera.manuf_id);
+//	OV7670_Config();
+//	if (hcamera.manuf_id == 0x7fa2 && hcamera.device_id == 0x7673)
+//	{
+//		 PRINTF("OV7670 address get\n");
+////		OV7670_Config();
+//
+//	}
+//
+//	else
 	{
-//		hcamera.addr = OV2640_ADDRESS;
-//		Camera_read_id(&hcamera);
-//		if (hcamera.manuf_id == 0x7fa2 && ((hcamera.device_id - 0x2641) <= 2))
-//		{
-//			// ov2640 当使用高帧率寄存器配置 XCLK时钟采用MCO1输出可能存在异常(花屏)，可以使用TIM1 Channel 1 PWM模式 产生12Mhz方波时钟
-//			// 但是使用TIM1输出XCLK时钟后与LCD的背光PWM冲突，故该函数自动设置LCD使用软件PWM控制
-//			// Camera_XCLK_Set(XCLK_TIM);
+		hcamera.addr = OV2640_ADDRESS>>1;
+		Camera_read_id(&hcamera);
+		PRINTF("id=%x \n",hcamera.manuf_id);
+		ov2640_init(framesize);
+		if (hcamera.manuf_id == 0x7fa2 && ((hcamera.device_id - 0x2641) <= 2))
+		{
+			// ov2640 当使用高帧率寄存器配置 XCLK时钟采用MCO1输出可能存在异常(花屏)，可以使用TIM1 Channel 1 PWM模式 产生12Mhz方波时钟
+			// 但是使用TIM1输出XCLK时钟后与LCD的背光PWM冲突，故该函数自动设置LCD使用软件PWM控制
+			// Camera_XCLK_Set(XCLK_TIM);
+			PRINTF("OV2640 address get\n");
 //			ov2640_init(framesize);
-//		}
-//		else
-//		{
+		}
+		else
+		{
 //			hcamera.addr = OV7725_ADDRESS;
 //			Camera_read_id(&hcamera);
 //			if (hcamera.manuf_id == 0x7fa2 && ((hcamera.device_id - 0x7721) <= 2))
@@ -323,6 +377,6 @@ void Camera_Init_Device(LPI2C_Type *hi2c, framesize_t framesize)
 //					hcamera.device_id = 0;
 //				}
 //			}
-//		}
+		}
 	}
 }

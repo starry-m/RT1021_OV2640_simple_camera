@@ -125,17 +125,17 @@ extern "C" {
 /* Definition of the pin level after initialization */
 #define BOARD_CAM_VS_PIN_LEVEL 0U
 /* Definition of the pin trigger mode */
-#define BOARD_CAM_VS_TRIGGER_MODE kHAL_GpioInterruptFallingEdge
+#define BOARD_CAM_VS_TRIGGER_MODE kHAL_GpioInterruptRisingEdge
 /* Definition of peripheral ID */
 #define PWM1_PERIPHERAL PWM1
 /* Definition of submodule 0 ID */
 #define PWM1_SM0 kPWM_Module_0
 /* Definition of clock source of submodule 0 frequency in Hertz */
-#define PWM1_SM0_SM_CLK_SOURCE_FREQ_HZ 48000000U
+#define PWM1_SM0_SM_CLK_SOURCE_FREQ_HZ 96000000U
 /* Definition of submodule 0 counter clock source frequency in Hertz - PWM1_SM0_SM_CLK_SOURCE_FREQ_HZ divided by prescaler */
-#define PWM1_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 48000000U
+#define PWM1_SM0_COUNTER_CLK_SOURCE_FREQ_HZ 96000000U
 /* Definition of submodule 0 counter (PWM) frequency in Hertz */
-#define PWM1_SM0_COUNTER_FREQ_HZ 12000000U
+#define PWM1_SM0_COUNTER_FREQ_HZ 24000000U
 /* Definition of submodule 0 channel A ID */
 #define PWM1_SM0_A kPWM_PwmA
 /* Definition of submodule 0 channel B ID */
@@ -178,13 +178,13 @@ extern "C" {
 /* Definition of the frame width (number of pixels in the line) */
 #define FLEXIO1_FRAME_WIDTH 160
 /* Definition of the frame height (number of lines) */
-#define FLEXIO1_FRAME_HEIGHT 128
+#define FLEXIO1_FRAME_HEIGHT 120
 /* Definition of the bytes per pixel size */
 #define FLEXIO1_BYTES_PER_PIXEL 2
 /* Definition of the line pitch size in bytes */
-#define FLEXIO1_LINE_PITCH_BYTES 320
+#define FLEXIO1_LINE_PITCH_BYTES 256
 /* Definition of number of the buffers inside allocated block */
-#define FLEXIO1_FRAME_BUFFER_COUNT 1
+#define FLEXIO1_FRAME_BUFFER_COUNT 2
 /* Definition of camera buffer alignment */
 #define FLEXIO1_BUFFER_ALIGN 32
 /* FLEXIO1 eDMA source request. */

@@ -16,7 +16,7 @@ int OV7670_WriteReg(uint8_t regAddr, const uint8_t *pData)
 //	}
 
 	status_t reVal = kStatus_Fail;
-	reVal = LPI2C_MasterStart(LPI2C3_PERIPHERAL, hcamera.addr, kLPI2C_Write);
+	reVal = LPI2C_MasterStart(LPI2C3_PERIPHERAL, 0X21, kLPI2C_Write);
 	if (reVal != kStatus_Success)
 		return kStatus_Fail;
 	while (LPI2C_MasterGetStatusFlags(LPI2C3_PERIPHERAL) & kLPI2C_MasterNackDetectFlag)
@@ -47,7 +47,7 @@ int OV7670_ReadReg(uint8_t regAddr, uint8_t *pData)
 
     status_t reVal = kStatus_Fail;
 
-    reVal = LPI2C_MasterStart(LPI2C3_PERIPHERAL, hcamera.addr, kLPI2C_Write);
+    reVal = LPI2C_MasterStart(LPI2C3_PERIPHERAL, 0X21, kLPI2C_Write);
     if (reVal != kStatus_Success)
         return kStatus_Fail;
     while (LPI2C_MasterGetStatusFlags(LPI2C3_PERIPHERAL) & kLPI2C_MasterNackDetectFlag)
@@ -57,7 +57,7 @@ int OV7670_ReadReg(uint8_t regAddr, uint8_t *pData)
     if (reVal != kStatus_Success)
         return kStatus_Fail;
 
-    reVal = LPI2C_MasterRepeatedStart(LPI2C3_PERIPHERAL, hcamera.addr, kLPI2C_Read);
+    reVal = LPI2C_MasterRepeatedStart(LPI2C3_PERIPHERAL, 0X21, kLPI2C_Read);
     if (reVal != kStatus_Success)
         return kStatus_Fail;
 

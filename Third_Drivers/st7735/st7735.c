@@ -182,7 +182,26 @@ static void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t 
     // write to RAM
     ST7735_WriteCommand(ST7735_RAMWR);
 }
+static int32_t ST7735_SetCursor(uint32_t Xpos, uint32_t Ypos)
+{
+	Xpos += ST7735_XSTART;
+	Ypos += ST7735_YSTART;
+    // column address set
+    ST7735_WriteCommand(ST7735_CASET);
+    uint8_t data[] = { Xpos >>8, Xpos& 0xFFU};
+    ST7735_WriteData(data, sizeof(data));
 
+    // row address set
+    ST7735_WriteCommand(ST7735_RASET);
+    data[0] =  Ypos >>8;
+    data[1] = Ypos& 0xFFU;
+    ST7735_WriteData(data, sizeof(data));
+
+    // write to RAM
+    ST7735_WriteCommand(ST7735_RAMWR);
+
+    return 0;
+}
 void ST7735_Init() {
     ST7735_Select();
     ST7735_Reset();
@@ -422,6 +441,8 @@ void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16
 
     // ST7735_Select();
     ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
+
+
     GPIO_PinWrite(BOARD_LCD_DC_PORT, BOARD_LCD_DC_PIN, 1U);
     uint8_t data[] = { color >> 8, color & 0xFF };
     uint8_t masterTxData;
@@ -443,7 +464,61 @@ void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16
 
     ST7735_Unselect();
 }
+int32_t st7735_send_data(uint8_t *pdata, uint32_t length)
+{
+	GPIO_PinWrite(BOARD_LCD_DC_PORT, BOARD_LCD_DC_PIN, 1U);
+	uint8_t masterTxData;
+	// HAL_GPIO_WritePin(ST7735_DC_GPIO_Port, ST7735_DC_Pin, GPIO_PIN_SET);
 
+	masterXfer.txData   = pdata;
+	masterXfer.rxData   = NULL;
+	masterXfer.dataSize = length;
+	masterXfer.configFlags =
+		LCD_LPSPI_MASTER_PCS_FOR_TRANSFER | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
+
+	LPSPI_MasterTransferBlocking(LCD_LPSPI_MASTER_BASEADDR, &masterXfer);
+
+	return 0;
+}
+int32_t ST7735_FillRGBRect( uint32_t Xpos, uint32_t Ypos, uint8_t *pData, uint32_t Width, uint32_t Height)
+{
+  int32_t ret = 0;
+  static uint8_t pdata[320];
+  uint8_t *rgb_data = pData;
+  uint32_t i, j;
+
+  if(((Xpos + Width) > ST7735_WIDTH) || ((Ypos + Height) > ST7735_HEIGHT))
+  {
+    ret = 1;
+  }/* Set Cursor */
+  else
+  {
+    for(j = 0; j < Height; j++)
+    {
+
+//      if(ST7735_SetCursor( Xpos, Ypos+j) != 0)
+//      {
+//        ret = 1;
+//      }
+//      else
+      {
+    	 ST7735_SetAddressWindow(Xpos,Ypos+j,Xpos+128,Ypos+j+1);
+        for(i = 0; i < Width; i++)
+        {
+          pdata[2U*i+ 1U] = (uint8_t)(*(rgb_data));
+          pdata[(2U*i) ] = (uint8_t)(*(rgb_data + 1));
+          rgb_data +=2;
+        }
+        if(st7735_send_data((uint8_t*)&pdata[0], 2U*Width) != 0)
+        {
+          ret = 1;
+        }
+      }
+    }
+  }
+
+  return ret;
+}
 void ST7735_FillRectangleFast(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
     // clipping
 //    if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT)) return;

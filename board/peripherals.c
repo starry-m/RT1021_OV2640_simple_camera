@@ -1191,8 +1191,8 @@ instance:
     - isCameraFormatEnabled: 'true'
     - camera_config:
       - pixelFormat: 'kVIDEO_PixelFormatRGB565'
-      - i_width: '128'
-      - i_height: '160'
+      - i_width: '160'
+      - i_height: '120'
       - buffers_config:
         - bufferName: 'defaultBuffer'
         - bufCount: '2'

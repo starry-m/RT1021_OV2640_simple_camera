@@ -502,7 +502,7 @@ int32_t ST7735_FillRGBRect( uint32_t Xpos, uint32_t Ypos, uint8_t *pData, uint32
 //      }
 //      else
       {
-    	 ST7735_SetAddressWindow(Xpos,Ypos+j,Xpos+128,Ypos+j+1);
+    	 ST7735_SetAddressWindow(Xpos,Ypos+j,Xpos+160,Ypos+j+1);
         for(i = 0; i < Width; i++)
         {
           pdata[2U*i+ 1U] = (uint8_t)(*(rgb_data));

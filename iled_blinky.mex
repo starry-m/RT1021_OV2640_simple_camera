@@ -1516,8 +1516,8 @@
                         <setting name="isCameraFormatEnabled" value="true"/>
                         <struct name="camera_config">
                            <setting name="pixelFormat" value="kVIDEO_PixelFormatRGB565"/>
-                           <setting name="i_width" value="128"/>
-                           <setting name="i_height" value="160"/>
+                           <setting name="i_width" value="160"/>
+                           <setting name="i_height" value="120"/>
                            <struct name="buffers_config">
                               <setting name="bufferName" value="defaultBuffer"/>
                               <setting name="bufCount" value="2"/>

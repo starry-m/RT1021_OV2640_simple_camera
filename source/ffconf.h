@@ -83,6 +83,7 @@ extern "C" {
 
 
 #define FF_USE_STRFUNC  1
+
 /* This option switches string functions, f_gets(), f_putc(), f_puts() and f_printf().
 /
 /  0: Disable string functions. FF_PRINT_LLI, FF_PRINT_FLOAT and FF_STRF_ENCODE have no effect.
@@ -101,7 +102,7 @@ extern "C" {
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_CODE_PAGE  437
+#define FF_CODE_PAGE  936
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect code page setting can cause a file open failure.
 /
@@ -131,7 +132,7 @@ extern "C" {
 
 
 #define FF_USE_LFN  0
-#define FF_MAX_LFN  0
+#define FF_MAX_LFN  255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
 /   0: Disable LFN. FF_MAX_LFN has no effect.
@@ -162,8 +163,8 @@ extern "C" {
 /  When LFN is not enabled, this option has no effect. */
 
 
-#define FF_LFN_BUF  0
-#define FF_SFN_BUF  0
+#define FF_LFN_BUF  255
+#define FF_SFN_BUF  12
 /* This set of options defines size of file name members in the FILINFO structure
 /  which is used to read out directory items. These values should be suffcient for
 /  the file names to read. The maximum possible length of the read file name depends
@@ -196,7 +197,7 @@ extern "C" {
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_VOLUMES  6
+#define FF_VOLUMES  3
 /* Number of volumes (logical drives) to be used. (1-10) */
 
 

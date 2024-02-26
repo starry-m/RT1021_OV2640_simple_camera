@@ -27,6 +27,8 @@
 
 
 #include "camera.h"
+#include "bmp_coder.h"
+
 
 #include "fsl_sd_disk.h"
 #include "sdmmc_config.h"
@@ -196,6 +198,19 @@ void CAM_OV7670_DEMO()
 //    PRINTF("FLEXIO1_Camera_Buffer[0][1][119]=%x\n",FLEXIO1_Camera_Buffer[0][20][60]);
 //    PRINTF("FLEXIO1_Camera_Buffer[0][100][60]=%x\n",FLEXIO1_Camera_Buffer[0][100][60]);
 	/*loop frame show*/
+    char picName[20];
+    uint16_t picID=0;
+    const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
+    FRESULT error;
+	#if (FF_FS_RPATH >= 2U)
+		error = f_chdrive((char const *)&driverNumberBuffer[0U]);
+		if (error)
+		{
+			PRINTF("Change drive failed.\r\n");
+			return -1;
+		}
+	#endif
+//    sprintf(picName,"/m_dir/test%d.bmp",picID);
     while(1)
     {
 //    	PRINTF("ov7670_finish_flag=%d,ov7670_frame_conter=%d\n",ov7670_finish_flag,ov7670_frame_conter);
@@ -206,6 +221,10 @@ void CAM_OV7670_DEMO()
     		ov7670_finish_flag=0;
 //    		 PRINTF("OV7670 frame get\n");
     		ST7735_FillRGBRect(0,0,(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0],160,120);
+    		sprintf(picName,"/m_dir/BB%d.bmp",picID);
+    		picID++;
+//    		if(0==picID%100)
+    		bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
 //    			for(uint8_t i=0;i<160;i++)
 //    			{
 //    				for(uint8_t j=0;j<128;j++)
@@ -307,6 +326,9 @@ int SD_operate_demo()
 
     PRINTF("\r\nCreate a file in that directory......\r\n");
     error = f_open(&g_fileObject, _T("/m_dir/f_1.dat"), (FA_WRITE | FA_READ | FA_CREATE_ALWAYS));
+
+//    bmp_pic_write(_T("/m_dir/test1.bmp"),(uint16_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
+
     if (error)
     {
         if (error == FR_EXIST)
@@ -425,6 +447,14 @@ int SD_operate_demo()
         }
 
 }
+//__attribute__((packed)) typedef   struct
+//{
+//    u16  bfType ;     //文件标志.只对'BM',用来识别BMP位图类型
+//    u32  bfSize ;	  //文件大小,占四个字节
+//    u16  bfReserved1 ;//保留
+//    u16  bfReserved2 ;//保留
+//    u32  bfOffBits ;  //从文件开始到位图数据(bitmap data)开始之间的的偏移量
+//}  BITMAPFILEHEADER ;
 /*!
  * @brief Main function
  */
@@ -466,10 +496,10 @@ int main(void)
     //    testSPI();
     //    SysTick_DelayTicks(2U);
 
-//    CAM_OV7670_DEMO();
+    CAM_OV7670_DEMO();
 
-       SD_operate_demo();
-       while(1);
+//       SD_operate_demo();
+//       while(1);
     extern void lsm6ds3tr_c_read_data_polling(void);
     //    lsm6ds3tr_c_read_data_polling();
 

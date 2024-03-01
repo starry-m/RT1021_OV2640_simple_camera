@@ -22,7 +22,7 @@
       <generate_registers_defines>false</generate_registers_defines>
    </preferences>
    <tools>
-      <pins name="Pins" version="15.0" enabled="true" update_project_code="true">
+      <pins name="Pins" version="15.0" enabled="true" update_project_code="false">
          <generated_project_files>
             <file path="board/pin_mux.c" update_enabled="true"/>
             <file path="board/pin_mux.h" update_enabled="true"/>
@@ -378,7 +378,7 @@
             </function>
          </functions_list>
       </pins>
-      <clocks name="Clocks" version="13.0" enabled="true" update_project_code="true">
+      <clocks name="Clocks" version="13.0" enabled="true" update_project_code="false">
          <generated_project_files>
             <file path="board/clock_config.c" update_enabled="true"/>
             <file path="board/clock_config.h" update_enabled="true"/>
@@ -790,7 +790,7 @@
          <generated_project_files>
             <file path="board/peripherals.c" update_enabled="true"/>
             <file path="board/peripherals.h" update_enabled="true"/>
-            <file path="source/ffconf.h" update_enabled="true"/>
+            <file path="source/ffconf.h" update_enabled="false"/>
             <file path="utilities/fsl_debug_console_conf.h" update_enabled="true"/>
          </generated_project_files>
          <peripherals_profile>

@@ -58,6 +58,7 @@ void SysTick_DelayTicks(uint32_t n)
     }
 }
 
+uint8_t fram_choice=0;
 uint16_t   ov7670_finish_flag = 0,ov7670_frame_conter=0;    //一场图像采集完成标志位
 edma_transfer_config_t transferConfig;
 flexio_camera_transfer_t cam_xfer;
@@ -70,8 +71,9 @@ void BOARD_CAM_VS_callback(void *param) {
 
 
 //	ov7670_finish_flag++;
-    ov7670_frame_conter++;
-
+//    ov7670_frame_conter++;
+    ov7670_finish_flag=1;
+//	fram_choice=fram_choice ? 0:1;
 //	DMA0->TCD[0].DADDR = (uint32_t)FLEXIO1_Camera_Buffer[0];
 
 	 FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig,
@@ -79,6 +81,9 @@ void BOARD_CAM_VS_callback(void *param) {
 //	    ov7670_finish_flag=1;
     /* Enable DMA channel request. */
 //    DMA0->SERQ = DMA_SERQ_SERQ(0);
+
+//	 cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[fram_choice];
+
 	 FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
 
     __DSB();
@@ -87,7 +92,7 @@ void BOARD_CAM_VS_callback(void *param) {
 void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData)
 {
 
-	ov7670_finish_flag=1;
+
 //	ov7670_finish_flag++;
     /* Enable DMA channel request. */
 //    DMA0->SERQ = DMA_SERQ_SERQ(FLEXIO_CAMERA_DMA_CHN);
@@ -143,6 +148,18 @@ void ADC_DEMO()
 #define DMA_MINOR_LOOP_SIZE     16u         /* 16 bytes */
 #define DMA_MAJOR_LOOP_SIZE     (OV7670_FRAME_BYTES / DMA_MINOR_LOOP_SIZE)
 
+void swap_half_16_1st(uint16_t *in,int len)
+{
+	  uint8_t *tmp=(uint8_t *)in,t;
+	  int i;
+
+	  for(i=0;i<len*2;i+=2)
+	  {
+	    t=tmp[i];
+	    tmp[i]=tmp[i+1];
+	    tmp[i+1]=t;
+	  }
+}
 
 void CAM_OV7670_DEMO()
 {
@@ -220,11 +237,13 @@ void CAM_OV7670_DEMO()
     	{
     		ov7670_finish_flag=0;
 //    		 PRINTF("OV7670 frame get\n");
-    		ST7735_FillRGBRect(0,0,(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0],160,120);
-    		sprintf(picName,"/m_dir/BB%d.bmp",picID);
-    		picID++;
-//    		if(0==picID%100)
-    		bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
+    		ST7735_FillRGBRect(0,0,(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0],160,120);//fram_choice ? 0:1
+//    		swap_half_16_1st(FLEXIO1_Camera_Buffer[fram_choice ? 0:1],FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT);
+//    		ST7735_DrawImage(0,0,160,120,(uint16_t*)FLEXIO1_Camera_Buffer[fram_choice ? 0:1]);
+//    		sprintf(picName,"/m_dir/BB%d.bmp",picID);
+//    		picID++;
+////    		if(0==picID%100)
+//    		bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
 //    			for(uint8_t i=0;i<160;i++)
 //    			{
 //    				for(uint8_t j=0;j<128;j++)
@@ -486,7 +505,7 @@ int main(void)
     PRINTF("APP START !\n");
     //    PRINTF("float:%.2f\n", 3.145);
        ST7735_Init();
-       ST7735_FillScreen(ST7735_BLUE);
+       ST7735_FillScreen(ST7735_BLACK);
 //    	ST7735_Init();
 //    	ST7735_FillScreen(ST7735_BLUE);
 //    	ST7735_FillScreen(ST7735_RED);
@@ -495,8 +514,28 @@ int main(void)
 //    	ST7735_FillScreen(ST7735_GREEN);
     //    testSPI();
     //    SysTick_DelayTicks(2U);
+       const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
+       FRESULT error;
+   	#if (FF_FS_RPATH >= 2U)
+   		error = f_chdrive((char const *)&driverNumberBuffer[0U]);
+   		if (error)
+   		{
+   			PRINTF("Change drive failed.\r\n");
+   			return -1;
+   		}
+   	#endif
 
-    CAM_OV7670_DEMO();
+
+
+    char picName[20];
+    for(uint16_t a=0;a<100;a++)
+    {
+    	sprintf(picName,"/m_dir/BB%d.bmp",a);
+    	bmp_pic_display(picName);
+    	HAL_Delay(500);
+    }
+
+    // CAM_OV7670_DEMO();
 
 //       SD_operate_demo();
 //       while(1);

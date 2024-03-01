@@ -1232,9 +1232,9 @@ FLEXIO_CAMERA_Type FLEXIO1_peripheralConfig = {
 };
 /* Camera configuration */
 flexio_camera_config_t FLEXIO1_config = {
-  .enablecamera = true,
+  .enablecamera = false,
   .enableInDoze = false,
-  .enableInDebug = true,
+  .enableInDebug = false,
   .enableFastAccess = false
 };
 edma_handle_t FLEXIO1_FLEXIO_0_Handle;

@@ -17,5 +17,6 @@
 
 
 uint8_t bmp_pic_write(char *filename,uint8_t *pdata);
+uint8_t bmp_pic_display(char *filename);
 
 #endif /* BMP_CODER_H_ */

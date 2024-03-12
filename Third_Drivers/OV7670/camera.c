@@ -236,81 +236,7 @@ void Camera_Reset(Camera_HandleTypeDef *hov)
 
 void Camera_XCLK_Set(uint8_t xclktype)
 {
-//#define USE_LCD 1
-//
-//#if USE_LCD
-//#include "lcd.h"
-//#endif
-//	if (xclktype == XCLK_TIM)
-//	{
-//		TIM_OC_InitTypeDef sConfigOC = {0};
-//		GPIO_InitTypeDef GPIO_InitStruct = {0};
-//
-//		// DeInit TIM1 PWM OutPut
-//		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8);
-//		HAL_TIM_PWM_DeInit(&htim1);
-//
-//		// Init TIM1 Channel 1 12Mhz PWM Output
-//		htim1.Instance = TIM1;
-//		htim1.Init.Prescaler = 1 - 1;
-//		htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-//		htim1.Init.Period = 10 - 1;
-//		htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//		htim1.Init.RepetitionCounter = 0;
-//		htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-//		if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
-//		{
-//			Error_Handler();
-//		}
-//
-//		sConfigOC.OCMode = TIM_OCMODE_PWM1;
-//		sConfigOC.Pulse = 5;
-//		sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-//		sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-//		sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//		sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-//		sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-//		if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-//		{
-//			Error_Handler();
-//		}
-//
-//		__HAL_RCC_GPIOA_CLK_ENABLE();
-//		GPIO_InitStruct.Pin = GPIO_PIN_8;
-//		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//		GPIO_InitStruct.Pull = GPIO_NOPULL;
-//		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-//		GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
-//		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-//
-//		HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-//
-//#if USE_LCD
-//		// Init 0.96''LCD Light Timer
-//		LCD_SoftPWMCtrlInit();
-//#endif
-//	}
-//	else
-//	{
-//#if USE_LCD
-//		// DeInit 0.96''LCD Light Timer
-//		LCD_SoftPWMCtrlDeInit();
-//#endif
-//
-//		// DeInit TIM1 PWM OutPut
-//		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8);
-//		HAL_TIM_PWM_DeInit(&htim1);
-//
-//#if USE_LCD
-//		// Init TIM1 Channel 2N 10Khz PWM Output
-//		MX_TIM1_Init();
-//		LCD_SoftPWMEnable(0);
-//		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
-//#endif
-//
-//		// Init MCO1 PA8 12Mhz Output
-//		HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI48, RCC_MCODIV_4);
-//	}
+
 }
 
 void Camera_Init_Device(LPI2C_Type *hi2c, framesize_t framesize)
@@ -319,24 +245,7 @@ void Camera_Init_Device(LPI2C_Type *hi2c, framesize_t framesize)
 //	hcamera.addr =0X21 ;//   0X21
 	hcamera.timeout = 100;
 
-//	int ov_reset_result = OV7670_Reset();
-//	if (ov_reset_result != 0)
-//	{
-//		PRINTF("ERROR OV\n");
-//	}
 
-//	Camera_read_id(&hcamera);
-//
-//	PRINTF("id=%x \n",hcamera.manuf_id);
-//	OV7670_Config();
-//	if (hcamera.manuf_id == 0x7fa2 && hcamera.device_id == 0x7673)
-//	{
-//		 PRINTF("OV7670 address get\n");
-////		OV7670_Config();
-//
-//	}
-//
-//	else
 	{
 		hcamera.addr = OV2640_ADDRESS>>1;
 		Camera_read_id(&hcamera);
@@ -352,31 +261,7 @@ void Camera_Init_Device(LPI2C_Type *hi2c, framesize_t framesize)
 		}
 		else
 		{
-//			hcamera.addr = OV7725_ADDRESS;
-//			Camera_read_id(&hcamera);
-//			if (hcamera.manuf_id == 0x7fa2 && ((hcamera.device_id - 0x7721) <= 2))
-//			{
-//				// ov7725 当使用高帧率寄存器配置 XCLK时钟采用MCO1输出可能存在异常(花屏)，可以使用TIM1 Channel 1 PWM模式 产生12Mhz方波时钟
-//				// 但是使用TIM1输出XCLK时钟后与LCD的背光PWM冲突，故该函数自动设置LCD使用软件PWM控制
-//				// Camera_XCLK_Set(XCLK_TIM);
-//				ov7725_init(framesize);
-//			}
-//			else
-//			{
-//
-//				hcamera.addr = OV5640_ADDRESS;
-//				Camera_read_id(&hcamera);
-//				if (hcamera.device_id == 0x5640)
-//				{
-//					// 自动对焦 AF 未实现
-//					ov5640_init(framesize);
-//				}
-//				else
-//				{
-//					hcamera.addr = 0;
-//					hcamera.device_id = 0;
-//				}
-//			}
+
 		}
 	}
 }

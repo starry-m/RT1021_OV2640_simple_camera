@@ -673,3 +673,119 @@ int ov2640_init(framesize_t framesize)
   return 0;
 }
 
+
+
+
+typedef enum  {
+    im_quality,
+    im_brightness,
+    im_contrast
+}im_params;
+
+uint8_t OV2640_image_param_set(uint8_t par1,int8_t value)
+{
+    if(im_quality==par1)
+    {
+    return     set_quality(value);
+    }
+    else     if(im_brightness==par1)
+    {
+    return     set_brightness(value);
+    }
+    else     if(im_contrast==par1)
+    {
+    return     set_contrast(value);
+    }
+}
+
+
+
+// #define BANK_SEL            0xFF
+// #define QS                  0x44
+
+// #define NUM_BRIGHTNESS_LEVELS (5)
+// static const uint8_t brightness_regs[NUM_BRIGHTNESS_LEVELS + 1][5] = {
+//     {BPADDR, BPDATA, BPADDR, BPDATA, BPDATA },
+//     {0x00, 0x04, 0x09, 0x00, 0x00 }, /* -2 */
+//     {0x00, 0x04, 0x09, 0x10, 0x00 }, /* -1 */
+//     {0x00, 0x04, 0x09, 0x20, 0x00 }, /*  0 */
+//     {0x00, 0x04, 0x09, 0x30, 0x00 }, /* +1 */
+//     {0x00, 0x04, 0x09, 0x40, 0x00 }, /* +2 */
+// };
+
+// #define NUM_CONTRAST_LEVELS (5)
+// static const uint8_t contrast_regs[NUM_CONTRAST_LEVELS + 1][7] = {
+//     {BPADDR, BPDATA, BPADDR, BPDATA, BPDATA, BPDATA, BPDATA },
+//     {0x00, 0x04, 0x07, 0x20, 0x18, 0x34, 0x06 }, /* -2 */
+//     {0x00, 0x04, 0x07, 0x20, 0x1c, 0x2a, 0x06 }, /* -1 */
+//     {0x00, 0x04, 0x07, 0x20, 0x20, 0x20, 0x06 }, /*  0 */
+//     {0x00, 0x04, 0x07, 0x20, 0x24, 0x16, 0x06 }, /* +1 */
+//     {0x00, 0x04, 0x07, 0x20, 0x28, 0x0c, 0x06 }, /* +2 */
+// };
+// typedef enum {
+//     BANK_DSP, BANK_SENSOR, BANK_MAX
+// } ov2640_bank_t;
+// static volatile ov2640_bank_t reg_bank = BANK_MAX;
+// int SCCB_Write(uint8_t reg, uint8_t data)
+// {
+//     return OV2640_WR_Reg(reg,data);
+// }
+// static int set_bank(ov2640_bank_t bank)
+// {
+//     int res = 0;
+//     if (bank != reg_bank) {
+//         reg_bank = bank;
+//         res = SCCB_Write( BANK_SEL, bank);
+//     }
+//     return res;
+// }
+// static int  control_write_reg(uint8_t bank, uint8_t reg, uint8_t value)
+// {
+//     int ret = set_bank(  bank);
+//     if(!ret) {
+//         ret = SCCB_Write( reg, value);
+//     }
+//     return ret;
+// }
+// /* 0-63*/
+// static int set_quality(int quality)
+// {
+//     if(quality < 0) {
+//         quality = 0;
+//     } else if(quality > 63) {
+//         quality = 63;
+//     }
+//     // sensor->status.quality = quality;
+//     return  control_write_reg(  BANK_DSP, QS, quality);
+// }
+// #define  control_write_reg_OR_RETURN(bank, reg, val) ret =  control_write_reg(  bank, reg, val); if(ret){return ret;}
+
+// /* -2,-1,0,+1,+2*/
+// static int set_brightness(int level)
+// {
+//     int ret=0;
+//     level += 3;
+//     if (level <= 0 || level > NUM_BRIGHTNESS_LEVELS) {
+//         return -1;
+//     }
+//     // sensor->status.brightness = level-3;
+//     for (int i=0; i<5; i++) {
+//          control_write_reg_OR_RETURN(BANK_DSP, brightness_regs[0][i], brightness_regs[level][i]);
+//     }
+//     return ret;
+// }
+// /* -2,-1,0,+1,+2*/
+// static int set_contrast(int level)
+// {
+//     int ret=0;
+//     level += 3;
+//     if (level <= 0 || level > NUM_CONTRAST_LEVELS) {
+//         return -1;
+//     }
+//     // sensor->status.contrast = level-3;
+//     for (int i=0; i<7; i++) {
+//          control_write_reg_OR_RETURN(BANK_DSP, contrast_regs[0][i], contrast_regs[level][i]);
+//     }
+//     return ret;
+// }
+

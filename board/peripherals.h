@@ -158,7 +158,7 @@ extern "C" {
 /* Definition of clock source frequency. */
 #define PIT_CLK_FREQ 62500000UL
 /* Definition of ticks count for channel 0 - deprecated. */
-#define PIT_0_TICKS 62500U
+#define PIT_0_TICKS 312500U
 /* PIT interrupt vector ID (number) - deprecated. */
 #define PIT_0_IRQN PIT_IRQn
 /* PIT interrupt handler identifier - deprecated. */
@@ -166,7 +166,7 @@ extern "C" {
 /* Definition of channel number for channel 0. */
 #define PIT_CHANNEL_0 kPIT_Chnl_0
 /* Definition of ticks count for channel 0. */
-#define PIT_CHANNEL_0_TICKS 62500U
+#define PIT_CHANNEL_0_TICKS 312500U
 /* PIT interrupt vector ID (number). */
 #define PIT_IRQN PIT_IRQn
 /* PIT interrupt vector priority. */

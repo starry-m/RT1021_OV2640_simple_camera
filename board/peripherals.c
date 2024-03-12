@@ -1134,7 +1134,7 @@ instance:
         - channel_id: 'CHANNEL_0'
         - channelNumber: '0'
         - enableChain: 'false'
-        - timerPeriod: '1KHZ'
+        - timerPeriod: '200HZ'
         - startTimer: 'true'
         - enableInterrupt: 'true'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -1146,7 +1146,7 @@ const pit_config_t PIT_config = {
 static void PIT_init(void) {
   /* Initialize the PIT. */
   PIT_Init(PIT_PERIPHERAL, &PIT_config);
-  /* Set channel 0 period to 1 ms (62500 ticks). */
+  /* Set channel 0 period to 5 ms (312500 ticks). */
   PIT_SetTimerPeriod(PIT_PERIPHERAL, PIT_CHANNEL_0, PIT_CHANNEL_0_TICKS);
   /* Enable interrupts from channel 0. */
   PIT_EnableInterrupts(PIT_PERIPHERAL, PIT_CHANNEL_0, kPIT_TimerInterruptEnable);
@@ -1232,9 +1232,9 @@ FLEXIO_CAMERA_Type FLEXIO1_peripheralConfig = {
 };
 /* Camera configuration */
 flexio_camera_config_t FLEXIO1_config = {
-  .enablecamera = false,
+  .enablecamera = true,
   .enableInDoze = false,
-  .enableInDebug = false,
+  .enableInDebug = true,
   .enableFastAccess = false
 };
 edma_handle_t FLEXIO1_FLEXIO_0_Handle;

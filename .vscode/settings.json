@@ -12,6 +12,9 @@
         "fsl_debug_console.h": "c",
         "board.h": "c",
         "stddef.h": "c",
-        "sensor_measure.h": "c"
+        "sensor_measure.h": "c",
+        "ov2640_regs.h": "c",
+        "ov2640.h": "c",
+        "string.h": "c"
     }
 }

@@ -20,15 +20,15 @@
  * Prototypes
  ******************************************************************************/
 #include "st7735.h"
+#include "stdio.h"
 
 #include "fsl_xbara.h"
 #include "sensor_measure.h"
 #include "com_delay.h"
 
-
 #include "camera.h"
 #include "bmp_coder.h"
-
+#include "multi_button.h"
 
 #include "fsl_sd_disk.h"
 #include "sdmmc_config.h"
@@ -48,6 +48,7 @@ void SysTick_Handler(void)
     {
         g_systickCounter--;
     }
+
 }
 
 void SysTick_DelayTicks(uint32_t n)
@@ -58,33 +59,37 @@ void SysTick_DelayTicks(uint32_t n)
     }
 }
 
-uint8_t fram_choice=0;
-uint16_t   ov7670_finish_flag = 0,ov7670_frame_conter=0;    //一场图像采集完成标志位
+uint8_t fram_choice = 0;
+uint16_t ov2640_finish_flag = 0, ov2640_frame_conter = 0; // 一场图像采集完成标志位
 edma_transfer_config_t transferConfig;
 flexio_camera_transfer_t cam_xfer;
-//uint16_t CAM_BUFFER[160*128];
+
+
+uint8_t encoder_key_pressed = 0;
+uint8_t im_par_chose = 0;
+uint8_t work_mode=0;
 /* BOARD_CAM_VS_handle callback function */
-void BOARD_CAM_VS_callback(void *param) {
-  /* Place your code here */
-	/* clear the interrupt status */
-	GPIO_PortClearInterruptFlags(BOARD_CAM_VS_GPIO, BOARD_CAM_VS_GPIO_PIN_MASK);
+void BOARD_CAM_VS_callback(void *param)
+{
+    /* Place your code here */
+    /* clear the interrupt status */
+    GPIO_PortClearInterruptFlags(BOARD_CAM_VS_GPIO, BOARD_CAM_VS_GPIO_PIN_MASK);
 
+    //	ov2640_finish_flag++;
+    //    ov2640_frame_conter++;
+    ov2640_finish_flag = 1;
+    //	fram_choice=fram_choice ? 0:1;
+    //	DMA0->TCD[0].DADDR = (uint32_t)FLEXIO1_Camera_Buffer[0];
 
-//	ov7670_finish_flag++;
-//    ov7670_frame_conter++;
-    ov7670_finish_flag=1;
-//	fram_choice=fram_choice ? 0:1;
-//	DMA0->TCD[0].DADDR = (uint32_t)FLEXIO1_Camera_Buffer[0];
-
-	 FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig,
-	                                   kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
-//	    ov7670_finish_flag=1;
+    FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig,
+                                   kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
+    //	    ov2640_finish_flag=1;
     /* Enable DMA channel request. */
-//    DMA0->SERQ = DMA_SERQ_SERQ(0);
+    //    DMA0->SERQ = DMA_SERQ_SERQ(0);
 
-//	 cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[fram_choice];
-
-	 FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
+    //	 cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[fram_choice];
+    if(0==work_mode)
+        FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig, &FLEXIO1_Camera_eDMA_Handle, &cam_xfer);
 
     __DSB();
 }
@@ -92,33 +97,33 @@ void BOARD_CAM_VS_callback(void *param) {
 void CAM_DMA_COMPLETE(FLEXIO_CAMERA_Type *base, flexio_camera_edma_handle_t *handle, status_t status, void *userData)
 {
 
-
-//	ov7670_finish_flag++;
+    //	ov2640_finish_flag++;
     /* Enable DMA channel request. */
-//    DMA0->SERQ = DMA_SERQ_SERQ(FLEXIO_CAMERA_DMA_CHN);
+    //    DMA0->SERQ = DMA_SERQ_SERQ(FLEXIO_CAMERA_DMA_CHN);
 }
 
 /* PIT_IRQn interrupt handler */
-void PIT_IRQHANDLER(void) {
-  /*  Place your code here */
-	/* Clear interrupt flag.*/
-	PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, kPIT_TimerFlag);
-
-  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
-     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
-  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+void PIT_IRQHANDLER(void)
+{
+    /*  Place your code here */
+    /* Clear interrupt flag.*/
+    PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, kPIT_TimerFlag);
+    //5ms
+    button_ticks();
+/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+   Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
     __DSB();
-  #endif
+#endif
 }
-
 
 void ADC_DEMO()
 {
-#define DEMO_ADC_BASE          ADC1
-#define DEMO_ADC_USER_CHANNEL  0U
+#define DEMO_ADC_BASE ADC1
+#define DEMO_ADC_USER_CHANNEL 0U
 #define DEMO_ADC_CHANNEL_GROUP 0U
-    uint8_t ticks=10;
-    while(ticks--)
+    uint8_t ticks = 10;
+    while (ticks--)
     {
         /*
          When in software trigger mode, each conversion would be launched once calling the "ADC_SetChannelConfig()"
@@ -126,354 +131,229 @@ void ADC_DEMO()
          just to change the "channelNumber" field in channel's configuration structure, and call the
          "ADC_SetChannelConfig() again.
         */
-          ADC_SetChannelConfig(ADC1_PERIPHERAL, ADC1_CH0_CONTROL_GROUP, &ADC1_channels_config[0]);
+        ADC_SetChannelConfig(ADC1_PERIPHERAL, ADC1_CH0_CONTROL_GROUP, &ADC1_channels_config[0]);
         while (0U == ADC_GetChannelStatusFlags(DEMO_ADC_BASE, DEMO_ADC_CHANNEL_GROUP))
         {
         }
         PRINTF("ADC Value: %d\r\n", ADC_GetChannelConversionValue(DEMO_ADC_BASE, DEMO_ADC_CHANNEL_GROUP));
         HAL_Delay(300);
     }
-
-    }
-
-
-
-/* DMA channel assigements. */
-#define FLEXIO_CAMERA_DMA_CHN           0u
-#define FLEXIO_CAMERA_DMA_MUX_SRC       (kDmaRequestMuxFlexIO1Request0Request1 & 0xFF)
-
-#define OV7670_FRAME_BYTES FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT
-#define FXIO_SHFT_COUNT         4u          /* 4 shifters */
-#define DMA_TRSF_SIZE           8u          /* 8 bytes */
-#define DMA_MINOR_LOOP_SIZE     16u         /* 16 bytes */
-#define DMA_MAJOR_LOOP_SIZE     (OV7670_FRAME_BYTES / DMA_MINOR_LOOP_SIZE)
-
-void swap_half_16_1st(uint16_t *in,int len)
-{
-	  uint8_t *tmp=(uint8_t *)in,t;
-	  int i;
-
-	  for(i=0;i<len*2;i+=2)
-	  {
-	    t=tmp[i];
-	    tmp[i]=tmp[i+1];
-	    tmp[i+1]=t;
-	  }
 }
 
-void CAM_OV7670_DEMO()
-{
-//	for(uint8_t i=0;i<160;i++)
-//	{
-//		for(uint8_t j=0;j<128;j++)
-//		{
-//			FLEXIO1_Camera_Buffer[0][i][j]=ST7735_RED;
-//			ST7735_DrawPixel(i,j,FLEXIO1_Camera_Buffer[0][i][j]);
-//		}
-//	}
-////	ST7735_FillRGBRect(0,0,(uint8_t *)FLEXIO1_Camera_Buffer[0][0][0],128,160);
-//	PRINTF("FLEXIO1_Camera_Buffer[0][1][119]=%x\n",FLEXIO1_Camera_Buffer[0][1][119]);
-//	ST7735_WriteString(10,10,"hello",Font_11x18,0xff00,0x0000);
-//	PRINTF("temp OV7670 START\n");
-//    while(1)
-//    {
-//    	HAL_Delay(500);
-//    	PRINTF("dididid\n");
-//
-//    }
-	/* lcd init  */
 
-	/*camera ov7670 init ,12M XCLK,PWDN LOW,RST HIGH*/
-	GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
-//	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
-//	HAL_Delay(20);
-	GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 1U);
+struct _image_parameters
+{
+    uint8_t quality;//2-59
+    int8_t brightness; //-2 - +2
+    int8_t contrast  //-2 - +2
+};
+
+extern uint8_t OV2640_image_param_set(uint8_t par1,int8_t value);
+
+void image_parameters_display(struct _image_parameters param)
+{
+    char d_buf[14];
+    sprintf(d_buf,"Q:%2d B:%2d C:%2d",param.quality,param.brightness,param.contrast);
+    ST7735_WriteString_lucency(10,10,d_buf,Font_7x10,ST7735_RED);
+
+    // char d_buf[2];
+    // d_buf[0]=param.quality/10 +'0' ;
+    // d_buf[1]=param.quality%10 +'0' ;  
+    // ST7735_WriteString_lucency(30,0,d_buf,Font_7x10,ST7735_RED);
+    
+    // d_buf[0]=param.brightness> 0? '+' :(param.brightness==0 ? '0':'-');
+    // d_buf[1]=(param.brightness>0 ?param.brightness:-param.brightness) +'0' ; 
+    // ST7735_WriteString_lucency(30,20,d_buf,Font_7x10,ST7735_RED);
+    // d_buf[0]=param.contrast> 0? '+' :(param.contrast==0 ? '0':'-');
+    // d_buf[1]=(param.contrast>0 ?param.contrast:-param.contrast) +'0' ; 
+    // ST7735_WriteString_lucency(30,40,d_buf,Font_7x10,ST7735_RED);
+}
+struct Button encoder_KEY;
+uint8_t btn1_id = 0;
+
+uint8_t read_button_GPIO(uint8_t button_id)
+{
+	return GPIO_ReadPinInput(BOARD_ENC_Buttion_GPIO,BOARD_ENC_Buttion_GPIO_PIN);
+}
+void BTN1_PRESS_UP_Handler(void* btn)
+{
+	PRINTF("BTN1_PRESS_UP\n");
+	PRINTF("SCREEN SHOT\n");
+    // encoder_key_pressed=1;
+    if(im_par_chose<2)
+        im_par_chose++;
+    else
+        im_par_chose=0;
+}
+void BTN1_DOUBLE_CLICK_Handler(void* btn)
+{
+	PRINTF("BTN1_DOUBLE_CLICK\n");
+    encoder_key_pressed=1;
+}
+void BTN1_LONG_PRESS_START_Handler(void* btn)
+{
+    PRINTF("BTN1_LONG_PRESS_START\n");
+    work_mode=!work_mode;
+}
+uint8_t enc_rotate()
+{
+    static uint32_t mCur_temp=0;
+    uint8_t ret=0;
+    uint32_t mCurPosValue= ENC_GetPositionValue(ENC1);
+    if(mCur_temp < mCurPosValue)
+        ret=1;
+    else if(mCur_temp > mCurPosValue)
+        ret=2;
+    else 
+        ret=0;
+    mCur_temp=mCurPosValue;
+    return ret;
+
+}
+void im_par_change_handler(struct _image_parameters *param)
+{
+    uint8_t menc_r=enc_rotate();
+    switch (im_par_chose)
+    {
+    case 0:
+        if(1==menc_r && param->quality<59)
+        param->quality++;
+        else if(2==menc_r && param->quality>2)
+        param->quality--;
+        break;
+    case 1:
+        if(1==menc_r && param->brightness<2)
+        param->brightness++;
+        else if(2==menc_r && param->brightness>-2)
+        param->brightness--;
+        break;
+    case 2:
+        if(1==menc_r && param->contrast<2)
+        param->contrast++;
+        else if(2==menc_r && param->contrast>-2)
+        param->contrast--;
+        break;
+    
+    default:
+        break;
+    }
+}
+void dis_pic_change_handler(uint8_t *param)
+{
+    uint8_t menc_r=enc_rotate();
+    if(1==menc_r)
+    {
+        *param++;
+    }
+    else if(2==menc_r)
+    {
+        *param--;
+    }
+}
+void CAM_OV2640_DEMO()
+{
+    struct _image_parameters m_image_parameters;
+    /* lcd init  */
+    
+    /*camera OV2640 init ,,PWDN LOW,RST HIGH*/
+    GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
+    GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
+    HAL_Delay(20);
+    GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 1U);
 
     /* Clear all the flag. */
     FLEXIO_CAMERA_ClearStatusFlags(&FLEXIO1_peripheralConfig, kFLEXIO_CAMERA_RxDataRegFullFlag | kFLEXIO_CAMERA_RxErrorFlag);
     /* Enable FlexIO. */
     FLEXIO_CAMERA_Enable(&FLEXIO1_peripheralConfig, true);
 
-	/*cam dma transfer start */
+    /*cam dma transfer start */
+    cam_xfer.dataAddress = (uint32_t)FLEXIO1_Camera_Buffer[0];
+    cam_xfer.dataNum = 2 * FLEXIO1_FRAME_WIDTH * FLEXIO1_FRAME_HEIGHT;
 
-    cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[0];
-    cam_xfer.dataNum=2*FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT;
+    FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig, &FLEXIO1_Camera_eDMA_Handle, &cam_xfer);
+    // 160x120 
+    Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA);
+    PRINTF("OV camera init ok\n");
 
-    FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig,&FLEXIO1_Camera_eDMA_Handle,&cam_xfer);
-    //// 160x120 x
-	Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA);
-	PRINTF("OV camera init ok\n");
-
+    /*因为用的OV2640模块上自带24M晶振，故不需要PWM做XCLK*/
     /* Set the load okay bit for all submodules to load registers from their buffer */
-//    PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
-//    /* Start the PWM generation from Submodules 0, 1 and 2 */
-//    PWM_StartTimer(PWM1, kPWM_Control_Module_0);
+    //    PWM_SetPwmLdok(PWM1, kPWM_Control_Module_0, true);
+    /* Start the PWM generation from Submodules 0, 1 and 2 */
+    //    PWM_StartTimer(PWM1, kPWM_Control_Module_0);
 
-
-
-    PRINTF("OV7670 START\n");
-//    PRINTF("FLEXIO1_Camera_Buffer[0][1][119]=%x\n",FLEXIO1_Camera_Buffer[0][20][60]);
-//    PRINTF("FLEXIO1_Camera_Buffer[0][100][60]=%x\n",FLEXIO1_Camera_Buffer[0][100][60]);
-	/*loop frame show*/
+    PRINTF("OV2640 START\n");
+    /*loop frame show*/
     char picName[20];
-    uint16_t picID=0;
+    uint16_t picID = 1;
+    uint16_t picID_read = 1,picID_read_last = 0;
     const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
     FRESULT error;
-	#if (FF_FS_RPATH >= 2U)
-		error = f_chdrive((char const *)&driverNumberBuffer[0U]);
-		if (error)
-		{
-			PRINTF("Change drive failed.\r\n");
-			return -1;
-		}
-	#endif
-//    sprintf(picName,"/m_dir/test%d.bmp",picID);
-    while(1)
-    {
-//    	PRINTF("ov7670_finish_flag=%d,ov7670_frame_conter=%d\n",ov7670_finish_flag,ov7670_frame_conter);
-//    	PRINTF("FLEXIO1_Camera_Buffer=%d\n",FLEXIO1_Camera_Buffer[0][10][10]);
-//    	HAL_Delay(100);
-    	if(ov7670_finish_flag)
-    	{
-    		ov7670_finish_flag=0;
-//    		 PRINTF("OV7670 frame get\n");
-    		ST7735_FillRGBRect(0,0,(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0],160,120);//fram_choice ? 0:1
-//    		swap_half_16_1st(FLEXIO1_Camera_Buffer[fram_choice ? 0:1],FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT);
-//    		ST7735_DrawImage(0,0,160,120,(uint16_t*)FLEXIO1_Camera_Buffer[fram_choice ? 0:1]);
-//    		sprintf(picName,"/m_dir/BB%d.bmp",picID);
-//    		picID++;
-////    		if(0==picID%100)
-//    		bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
-//    			for(uint8_t i=0;i<160;i++)
-//    			{
-//    				for(uint8_t j=0;j<128;j++)
-//    				{
-////    					FLEXIO1_Camera_Buffer[0][i][j]=ST7735_RED;
-//    					ST7735_DrawPixel(j,i,FLEXIO1_Camera_Buffer[0][i][j]);
-//    				}
-//    			}
-    	}
-
-    }
-}
-void FATFS_DiskInit(void)
-{
-//	extern void BOARD_SD_Config(void *card, sd_cd_t cd, uint32_t hostIRQPriority, void *userData);
-	 BOARD_SD_Config(&g_sd, NULL, BOARD_SDMMC_SD_HOST_IRQ_PRIORITY, NULL);
-
-	/* SD host init function */
-	if (SD_HostInit(&g_sd) != kStatus_Success)
-	{
-		PRINTF("\r\nSD host init fail\r\n");
-//	        return kStatus_Fail;
-	}
-
-	/* wait card insert */
-	if (SD_PollingCardInsert(&g_sd, kSD_Inserted) == kStatus_Success)
-	{
-		PRINTF("\r\nCard inserted.\r\n");
-		/* power off card */
-		SD_SetCardPower(&g_sd, false);
-		/* power on the card */
-		SD_SetCardPower(&g_sd, true);
-	}
-	else
-	{
-		PRINTF("\r\nCard detect fail.\r\n");
-//	        return kStatus_Fail;
-	}
-
-//	f_mount(&FATFS_System_0, (const TCHAR*)"2:", 1)
-	if (f_mount(&FATFS_System_0, (const TCHAR*)"2:", 1))
-	{
-		PRINTF("Mount volume failed.\r\n");
-
-	}
-//	PRINTF("Mount success.\r\n");
-//	    return kStatus_Success;
-}
-static FIL g_fileObject;
-#define BUFFER_SIZE (513U)
-/*! @brief Data written to the card */
-SDK_ALIGN(uint8_t g_bufferWrite[BUFFER_SIZE], BOARD_SDMMC_DATA_BUFFER_ALIGN_SIZE);
-/*! @brief Data read from the card */
-SDK_ALIGN(uint8_t g_bufferRead[BUFFER_SIZE], BOARD_SDMMC_DATA_BUFFER_ALIGN_SIZE);
-int SD_operate_demo()
-{
-	FRESULT error;
-	DIR directory; /* Directory object */
-	FILINFO fileInformation;
-    UINT bytesWritten;
-    UINT bytesRead;
-    volatile bool failedFlag           = false;
-    char ch                            = '0';
-    BYTE work[FF_MAX_SS];
-    const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
-
 #if (FF_FS_RPATH >= 2U)
     error = f_chdrive((char const *)&driverNumberBuffer[0U]);
     if (error)
     {
         PRINTF("Change drive failed.\r\n");
-        return -1;
+//        return -1;
     }
 #endif
 
-//#if FF_USE_MKFS
-//    PRINTF("\r\nMake file system......The time may be long if the card capacity is big.\r\n");
-//    if (f_mkfs(driverNumberBuffer, 0, work, sizeof work))
-//    {
-//        PRINTF("Make file system failed.\r\n");
-//        return -1;
-//    }
-//#endif /* FF_USE_MKFS */
+    static PressEvent encoder_KEY_event_val;
 
-	PRINTF("\r\nCreate directory......\r\n");
-	error = f_mkdir(_T("/m_dir"));
-	if (error)
-	{
-		if (error == FR_EXIST)
-		{
-			PRINTF("Directory exists.\r\n");
-		}
-		else
-		{
-			PRINTF("Make directory failed.\r\n");
-			return -1;
-		}
-	}
+	button_init(&encoder_KEY, read_button_GPIO, 0, btn1_id);
+	button_start(&encoder_KEY);
+	button_attach(&encoder_KEY, PRESS_UP,       BTN1_PRESS_UP_Handler);
+    
+    button_attach(&encoder_KEY, DOUBLE_CLICK,       BTN1_DOUBLE_CLICK_Handler);
+    button_attach(&encoder_KEY, LONG_PRESS_START,BTN1_LONG_PRESS_START_Handler);
 
-    PRINTF("\r\nCreate a file in that directory......\r\n");
-    error = f_open(&g_fileObject, _T("/m_dir/f_1.dat"), (FA_WRITE | FA_READ | FA_CREATE_ALWAYS));
-
-//    bmp_pic_write(_T("/m_dir/test1.bmp"),(uint16_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
-
-    if (error)
+    ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
+    
+    while (1)
     {
-        if (error == FR_EXIST)
+        if(!work_mode)
         {
-            PRINTF("File exists.\r\n");
+            im_par_change_handler(&m_image_parameters);
         }
         else
         {
-            PRINTF("Open file failed.\r\n");
-            return -1;
+            dis_pic_change_handler(&picID_read);
+            if(picID_read <1)
+                picID_read=1;
+            if(picID_read>picID)
+                picID_read=picID;
         }
+        
+        if (ov2640_finish_flag&& !work_mode)
+        {
+            ov2640_finish_flag = 0;
+            /* PRINTF("OV2640 frame get\n");*/
+            ST7735_FillRGBRect(0, 0, (uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0], 160, 120);
+            if(encoder_key_pressed)
+            {
+                encoder_key_pressed=0;
+                sprintf(picName,"/m_dir/screen%d.bmp",picID);
+                picID++;
+                bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
+            }
+
+            image_parameters_display(m_image_parameters);
+            
+
+        }
+        else if(work_mode)
+        {
+            if(picID_read_last !=picID_read)
+            {
+                sprintf(picName, "/m_dir/BB%d.bmp", picID_read);
+                bmp_pic_display(picName);
+                picID_read_last=picID_read;
+            }
+            
+        }
+        
     }
-
-    PRINTF("\r\nCreate a directory in that directory......\r\n");
-        error = f_mkdir(_T("/m_dir/dir_2"));
-        if (error)
-        {
-            if (error == FR_EXIST)
-            {
-                PRINTF("Directory exists.\r\n");
-            }
-            else
-            {
-                PRINTF("Directory creation failed.\r\n");
-                return -1;
-            }
-        }
-
-        PRINTF("\r\nList the file in that directory......\r\n");
-        if (f_opendir(&directory, "/m_dir"))
-        {
-            PRINTF("Open directory failed.\r\n");
-            return -1;
-        }
-
-        for (;;)
-        {
-            error = f_readdir(&directory, &fileInformation);
-
-            /* To the end. */
-            if ((error != FR_OK) || (fileInformation.fname[0U] == 0U))
-            {
-                break;
-            }
-            if (fileInformation.fname[0] == '.')
-            {
-                continue;
-            }
-            if (fileInformation.fattrib & AM_DIR)
-            {
-                PRINTF("Directory file : %s.\r\n", fileInformation.fname);
-            }
-            else
-            {
-                PRINTF("General file : %s.\r\n", fileInformation.fname);
-            }
-        }
-        memset(g_bufferWrite, 'a', sizeof(g_bufferWrite));
-        g_bufferWrite[BUFFER_SIZE - 2U] = '\r';
-        g_bufferWrite[BUFFER_SIZE - 1U] = '\n';
-
-        PRINTF("\r\nWrite/read file until encounters error......\r\n");
-        while (true)
-        {
-            if (failedFlag || (ch == 'q'))
-            {
-                break;
-            }
-
-            PRINTF("\r\nWrite to above created file.\r\n");
-            error = f_write(&g_fileObject, g_bufferWrite, sizeof(g_bufferWrite), &bytesWritten);
-            if ((error) || (bytesWritten != sizeof(g_bufferWrite)))
-            {
-                PRINTF("Write file failed. \r\n");
-                failedFlag = true;
-                continue;
-            }
-
-            /* Move the file pointer */
-            if (f_lseek(&g_fileObject, 0U))
-            {
-                PRINTF("Set file pointer position failed. \r\n");
-                failedFlag = true;
-                continue;
-            }
-
-            PRINTF("Read from above created file.\r\n");
-            memset(g_bufferRead, 0U, sizeof(g_bufferRead));
-            error = f_read(&g_fileObject, g_bufferRead, sizeof(g_bufferRead), &bytesRead);
-            if ((error) || (bytesRead != sizeof(g_bufferRead)))
-            {
-                PRINTF("Read file failed. \r\n");
-                failedFlag = true;
-                continue;
-            }
-
-            PRINTF("Compare the read/write content......\r\n");
-            if (memcmp(g_bufferWrite, g_bufferRead, sizeof(g_bufferWrite)))
-            {
-                PRINTF("Compare read/write content isn't consistent.\r\n");
-                failedFlag = true;
-                continue;
-            }
-            PRINTF("The read/write content is consistent.\r\n");
-
-            PRINTF("\r\nInput 'q' to quit read/write.\r\nInput other char to read/write file again.\r\n");
-            ch = GETCHAR();
-            PUTCHAR(ch);
-        }
-        PRINTF("\r\nThe example will not read/write file again.\r\n");
-
-        if (f_close(&g_fileObject))
-        {
-            PRINTF("\r\nClose file failed.\r\n");
-            return -1;
-        }
-
 }
-//__attribute__((packed)) typedef   struct
-//{
-//    u16  bfType ;     //文件标志.只对'BM',用来识别BMP位图类型
-//    u32  bfSize ;	  //文件大小,占四个字节
-//    u16  bfReserved1 ;//保留
-//    u16  bfReserved2 ;//保留
-//    u32  bfOffBits ;  //从文件开始到位图数据(bitmap data)开始之间的的偏移量
-//}  BITMAPFILEHEADER ;
+
 /*!
  * @brief Main function
  */
@@ -504,41 +384,35 @@ int main(void)
     }
     PRINTF("APP START !\n");
     //    PRINTF("float:%.2f\n", 3.145);
-       ST7735_Init();
-       ST7735_FillScreen(ST7735_BLACK);
-//    	ST7735_Init();
-//    	ST7735_FillScreen(ST7735_BLUE);
-//    	ST7735_FillScreen(ST7735_RED);
-//    	ST7735_FillScreen(ST7735_BLACK);
-//    	ST7735_FillScreen(ST7735_WHITE);
-//    	ST7735_FillScreen(ST7735_GREEN);
-    //    testSPI();
-    //    SysTick_DelayTicks(2U);
-       const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
-       FRESULT error;
-   	#if (FF_FS_RPATH >= 2U)
-   		error = f_chdrive((char const *)&driverNumberBuffer[0U]);
-   		if (error)
-   		{
-   			PRINTF("Change drive failed.\r\n");
-   			return -1;
-   		}
-   	#endif
-
-
+    ST7735_Init();
+    ST7735_FillScreen(ST7735_BLACK);
+    //    	ST7735_Init();
+    //    	ST7735_FillScreen(ST7735_BLUE);
+    //    	ST7735_FillScreen(ST7735_RED);
+    //    	ST7735_FillScreen(ST7735_BLACK);
+    //    	ST7735_FillScreen(ST7735_WHITE);
+    //    	ST7735_FillScreen(ST7735_GREEN);
+    const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
+    FRESULT error;
+#if (FF_FS_RPATH >= 2U)
+    error = f_chdrive((char const *)&driverNumberBuffer[0U]);
+    if (error)
+    {
+        PRINTF("Change drive failed.\r\n");
+        return -1;
+    }
+#endif
 
     char picName[20];
-    for(uint16_t a=0;a<100;a++)
+    for (uint16_t a = 0; a < 100; a++)
     {
-    	sprintf(picName,"/m_dir/BB%d.bmp",a);
-    	bmp_pic_display(picName);
-    	HAL_Delay(500);
+        sprintf(picName, "/m_dir/BB%d.bmp", a);
+        bmp_pic_display(picName);
+        HAL_Delay(500);
     }
 
-    // CAM_OV7670_DEMO();
+    // CAM_OV2640_DEMO();
 
-//       SD_operate_demo();
-//       while(1);
     extern void lsm6ds3tr_c_read_data_polling(void);
     //    lsm6ds3tr_c_read_data_polling();
 
@@ -555,8 +429,6 @@ int main(void)
     uint32_t pwmVal = 1;
     //	ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
     //	uint32_t mCurPosValue;
-
-
 
     BH1730_test();
     double rth[2];
@@ -609,77 +481,42 @@ int main(void)
         PWM_SetPwmLdok(PWM2, kPWM_Control_Module_0, true);
     }
 }
-static void configDMA(void)
-{
-    uint32_t soff, smod = 0u, size=0u;
 
-    while(1u << size < DMA_TRSF_SIZE) /* size = log2(DMA_TRSF_SIZE) */
+
+
+
+void FATFS_DiskInit(void)
+{
+    //	extern void BOARD_SD_Config(void *card, sd_cd_t cd, uint32_t hostIRQPriority, void *userData);
+    BOARD_SD_Config(&g_sd, NULL, BOARD_SDMMC_SD_HOST_IRQ_PRIORITY, NULL);
+
+    /* SD host init function */
+    if (SD_HostInit(&g_sd) != kStatus_Success)
     {
-        size++;
+        PRINTF("\r\nSD host init fail\r\n");
+        //	        return kStatus_Fail;
     }
 
-    if(DMA_TRSF_SIZE == DMA_MINOR_LOOP_SIZE)
+    /* wait card insert */
+    if (SD_PollingCardInsert(&g_sd, kSD_Inserted) == kStatus_Success)
     {
-        soff = 0u;
+        PRINTF("\r\nCard inserted.\r\n");
+        /* power off card */
+        SD_SetCardPower(&g_sd, false);
+        /* power on the card */
+        SD_SetCardPower(&g_sd, true);
     }
     else
     {
-        soff = DMA_TRSF_SIZE;
-        while(1u << smod < DMA_MINOR_LOOP_SIZE) /* smod = log2(DMA_MINOR_LOOP_SIZE) */
-        {
-            smod++;
-        }
+        PRINTF("\r\nCard detect fail.\r\n");
+        //	        return kStatus_Fail;
     }
 
-    /* Configure DMA TCD */
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SADDR = FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SOFF = soff;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].ATTR = DMA_ATTR_SMOD(smod) |
-                                            DMA_ATTR_SSIZE(size) |
-                                            DMA_ATTR_DMOD(0u) |
-                                            DMA_ATTR_DSIZE(size);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].NBYTES_MLNO = DMA_MINOR_LOOP_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].SLAST = 0u;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DADDR = (uint32_t)(*FLEXIO1_Camera_Buffer[0]);
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DOFF = DMA_TRSF_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].DLAST_SGA = -OV7670_FRAME_BYTES;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR = 0u;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].CSR |= DMA_CSR_DREQ_MASK;
-    DMA0->TCD[FLEXIO_CAMERA_DMA_CHN].BITER_ELINKNO = DMA_MAJOR_LOOP_SIZE;
-
-    /* Configure DMA MUX Source */
-    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] = DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] &
-                                            (~DMAMUX_CHCFG_SOURCE_MASK) |
-                                            DMAMUX_CHCFG_SOURCE(FLEXIO_CAMERA_DMA_MUX_SRC);
-    /* Enable DMA channel. */
-    DMAMUX->CHCFG[FLEXIO_CAMERA_DMA_CHN] |= DMAMUX_CHCFG_ENBL_MASK;
+    //	f_mount(&FATFS_System_0, (const TCHAR*)"2:", 1)
+    if (f_mount(&FATFS_System_0, (const TCHAR *)"2:", 1))
+    {
+        PRINTF("Mount volume failed.\r\n");
+    }
+    //	PRINTF("Mount success.\r\n");
+    //	    return kStatus_Success;
 }
-
-/*    EDMA_PrepareTransfer(&transferConfig,
-        (void *)FLEXIO_CAMERA_GetRxBufferAddress(&FLEXIO1_peripheralConfig),
-        8,
-        (void *)(FLEXIO1_Camera_Buffer[0]),
-        8,
-        8*8,
-		FLEXIO1_FRAME_WIDTH *FLEXIO1_FRAME_HEIGHT,
-        kEDMA_MemoryToMemory);
-
-
-        EDMA_SubmitTransfer(&FLEXIO1_FLEXIO_0_Handle, &transferConfig);
-
-//        switch(4*flexio_shift_count)
-//        {
-//            case 4:     s_addr_modulo = kEDMA_Modulo4bytes;break;
-//            case 8:     s_addr_modulo = kEDMA_Modulo8bytes;break;
-//            case 16:    s_addr_modulo = kEDMA_Modulo16bytes;break;
-//            case 32:    s_addr_modulo = kEDMA_Modulo32bytes;break;
-//            default:assert(0);  //参数有误
-//        }
-
-
-        EDMA_SetModulo(DMA0,FLEXIO1_FLEXIO_0_DMA_CHANNEL,kEDMA_Modulo64bytes,kEDMA_ModuloDisable);
-        EDMA_StartTransfer(&FLEXIO1_FLEXIO_0_Handle);
-//        configDMA();
-         Enable FlexIO DMA request.
-        FLEXIO_CAMERA_EnableRxDMA(&FLEXIO1_peripheralConfig, true);*/

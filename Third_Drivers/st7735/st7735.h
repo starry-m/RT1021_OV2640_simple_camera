@@ -270,6 +270,9 @@ void ST7735_DrawFilledCircle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color
 
 int32_t ST7735_FillRGBRect( uint32_t Xpos, uint32_t Ypos, uint8_t *pData, uint32_t Width, uint32_t Height);
 
+
+void ST7735_WriteString_lucency(uint16_t x, uint16_t y, const char *str, FontDef font, uint16_t color);
+
 #ifdef __cplusplus
 }
 #endif

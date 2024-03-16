@@ -657,7 +657,10 @@ instance:
       - wdogConfig:
         - enableWatchdog: 'false'
       - filter_config_t:
-        - enableFilter: 'false'
+        - enableFilter: 'true'
+        - filterClock_s: '1'
+        - filterPeriod_s: '10'
+        - filterCount: '3'
     - interruptsCfg:
       - interruptSources: ''
       - isInterruptEnabled: 'false'
@@ -667,7 +670,6 @@ instance:
         - enable_priority: 'false'
         - priority: '0'
         - enable_custom_name: 'false'
-    - quick_selection: 'QuickSelection1'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 /* ENC configuration */
@@ -688,7 +690,7 @@ enc_config_t ENC1_config = {
   .watchdogTimeoutValue = 0,
   .filterPrescaler = kENC_FilterPrescalerDiv1,
   .filterCount = 0,
-  .filterSamplePeriod = 0,
+  .filterSamplePeriod = 10,
 };
 
 static void ENC1_init(void) {

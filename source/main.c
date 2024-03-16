@@ -48,7 +48,6 @@ void SysTick_Handler(void)
     {
         g_systickCounter--;
     }
-
 }
 
 void SysTick_DelayTicks(uint32_t n)
@@ -64,10 +63,9 @@ uint16_t ov2640_finish_flag = 0, ov2640_frame_conter = 0; // 一场图像采集�
 edma_transfer_config_t transferConfig;
 flexio_camera_transfer_t cam_xfer;
 
-
 uint8_t encoder_key_pressed = 0;
 uint8_t im_par_chose = 0;
-uint8_t work_mode=0;
+uint8_t work_mode = 0;
 /* BOARD_CAM_VS_handle callback function */
 void BOARD_CAM_VS_callback(void *param)
 {
@@ -88,7 +86,7 @@ void BOARD_CAM_VS_callback(void *param)
     //    DMA0->SERQ = DMA_SERQ_SERQ(0);
 
     //	 cam_xfer.dataAddress=(uint32_t)FLEXIO1_Camera_Buffer[fram_choice];
-    if(0==work_mode)
+    if (0 == work_mode)
         FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig, &FLEXIO1_Camera_eDMA_Handle, &cam_xfer);
 
     __DSB();
@@ -108,7 +106,7 @@ void PIT_IRQHANDLER(void)
     /*  Place your code here */
     /* Clear interrupt flag.*/
     PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, kPIT_TimerFlag);
-    //5ms
+    // 5ms
     button_ticks();
 /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
    Store immediate overlapping exception return operation might vector to incorrect interrupt. */
@@ -140,32 +138,32 @@ void ADC_DEMO()
     }
 }
 
-
 struct _image_parameters
 {
-    uint8_t quality;//2-59
+    uint8_t quality;   // 2-59
     int8_t brightness; //-2 - +2
-    int8_t contrast  //-2 - +2
+    int8_t contrast    //-2 - +2
 };
 
-extern uint8_t OV2640_image_param_set(uint8_t par1,int8_t value);
+extern uint8_t OV2640_image_param_set(uint8_t par1, int8_t value);
 
 void image_parameters_display(struct _image_parameters param)
 {
     char d_buf[14];
-    sprintf(d_buf,"Q:%2d B:%2d C:%2d",param.quality,param.brightness,param.contrast);
-    ST7735_WriteString_lucency(10,10,d_buf,Font_7x10,ST7735_RED);
+    sprintf(d_buf, "Q:%2d B:%2d C:%2d", param.quality, param.brightness, param.contrast);
+//    ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
+    ST7735_WriteString(10, 10, d_buf, Font_11x18, ST7735_RED,ST7735_BLACK);
 
     // char d_buf[2];
     // d_buf[0]=param.quality/10 +'0' ;
-    // d_buf[1]=param.quality%10 +'0' ;  
+    // d_buf[1]=param.quality%10 +'0' ;
     // ST7735_WriteString_lucency(30,0,d_buf,Font_7x10,ST7735_RED);
-    
+
     // d_buf[0]=param.brightness> 0? '+' :(param.brightness==0 ? '0':'-');
-    // d_buf[1]=(param.brightness>0 ?param.brightness:-param.brightness) +'0' ; 
+    // d_buf[1]=(param.brightness>0 ?param.brightness:-param.brightness) +'0' ;
     // ST7735_WriteString_lucency(30,20,d_buf,Font_7x10,ST7735_RED);
     // d_buf[0]=param.contrast> 0? '+' :(param.contrast==0 ? '0':'-');
-    // d_buf[1]=(param.contrast>0 ?param.contrast:-param.contrast) +'0' ; 
+    // d_buf[1]=(param.contrast>0 ?param.contrast:-param.contrast) +'0' ;
     // ST7735_WriteString_lucency(30,40,d_buf,Font_7x10,ST7735_RED);
 }
 struct Button encoder_KEY;
@@ -173,88 +171,93 @@ uint8_t btn1_id = 0;
 
 uint8_t read_button_GPIO(uint8_t button_id)
 {
-	return GPIO_ReadPinInput(BOARD_ENC_Buttion_GPIO,BOARD_ENC_Buttion_GPIO_PIN);
+    return GPIO_ReadPinInput(BOARD_ENC_Buttion_GPIO, BOARD_ENC_Buttion_GPIO_PIN);
 }
-void BTN1_PRESS_UP_Handler(void* btn)
+void BTN1_PRESS_UP_Handler(void *btn)
 {
-	PRINTF("BTN1_PRESS_UP\n");
-	PRINTF("SCREEN SHOT\n");
+    PRINTF("BTN1_PRESS_UP\n");
+
     // encoder_key_pressed=1;
-    if(im_par_chose<2)
+    if (im_par_chose < 2)
         im_par_chose++;
     else
-        im_par_chose=0;
+        im_par_chose = 0;
+    PRINTF("im_par_chose=%d\n",im_par_chose);
+
 }
-void BTN1_DOUBLE_CLICK_Handler(void* btn)
+void BTN1_DOUBLE_CLICK_Handler(void *btn)
 {
-	PRINTF("BTN1_DOUBLE_CLICK\n");
-    encoder_key_pressed=1;
+    PRINTF("BTN1_DOUBLE_CLICK\n");
+    PRINTF("SCREEN SHOT\n");
+    encoder_key_pressed = 1;
 }
-void BTN1_LONG_PRESS_START_Handler(void* btn)
+void BTN1_LONG_PRESS_START_Handler(void *btn)
 {
     PRINTF("BTN1_LONG_PRESS_START\n");
-    work_mode=!work_mode;
+    work_mode = !work_mode;
 }
 uint8_t enc_rotate()
 {
-    static uint32_t mCur_temp=0;
-    uint8_t ret=0;
-    uint32_t mCurPosValue= ENC_GetPositionValue(ENC1);
-    if(mCur_temp < mCurPosValue)
-        ret=1;
-    else if(mCur_temp > mCurPosValue)
-        ret=2;
-    else 
-        ret=0;
-    mCur_temp=mCurPosValue;
+    static uint32_t mCur_temp = 0;
+    uint8_t ret = 0;
+    uint32_t mCurPosValue = ENC_GetPositionValue(ENC1);
+    if (mCur_temp < mCurPosValue)
+        ret = 1;
+    else if (mCur_temp > mCurPosValue)
+        ret = 2;
+    else
+        ret = 0;
+    mCur_temp = mCurPosValue;
     return ret;
-
 }
 void im_par_change_handler(struct _image_parameters *param)
 {
-    uint8_t menc_r=enc_rotate();
+    uint8_t menc_r = enc_rotate();
     switch (im_par_chose)
     {
     case 0:
-        if(1==menc_r && param->quality<59)
-        param->quality++;
-        else if(2==menc_r && param->quality>2)
-        param->quality--;
+        if (1 == menc_r && param->quality < 59)
+            param->quality++;
+        else if (2 == menc_r && param->quality > 2)
+            param->quality--;
         break;
     case 1:
-        if(1==menc_r && param->brightness<2)
-        param->brightness++;
-        else if(2==menc_r && param->brightness>-2)
-        param->brightness--;
+        if (1 == menc_r && param->brightness < 2)
+            param->brightness++;
+        else if (2 == menc_r && param->brightness > -2)
+            param->brightness--;
         break;
     case 2:
-        if(1==menc_r && param->contrast<2)
-        param->contrast++;
-        else if(2==menc_r && param->contrast>-2)
-        param->contrast--;
+        if (1 == menc_r && param->contrast < 2)
+            param->contrast++;
+        else if (2 == menc_r && param->contrast > -2)
+            param->contrast--;
         break;
-    
+
     default:
         break;
     }
 }
-void dis_pic_change_handler(uint8_t *param)
+void dis_pic_change_handler(uint16_t *param)
 {
-    uint8_t menc_r=enc_rotate();
-    if(1==menc_r)
+    uint8_t menc_r = enc_rotate();
+    uint16_t temp=*param;
+    if (1 == menc_r)
     {
-        *param++;
+        *param= temp+1;
     }
-    else if(2==menc_r)
+    else if (2 == menc_r)
     {
-        *param--;
+    	*param= temp-1;
     }
 }
 void CAM_OV2640_DEMO()
 {
     struct _image_parameters m_image_parameters;
     /* lcd init  */
-    
+    m_image_parameters.brightness=1;
+    m_image_parameters.contrast=1;
+    m_image_parameters.quality=20;
     /*camera OV2640 init ,,PWDN LOW,RST HIGH*/
     GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
     GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
@@ -271,7 +274,7 @@ void CAM_OV2640_DEMO()
     cam_xfer.dataNum = 2 * FLEXIO1_FRAME_WIDTH * FLEXIO1_FRAME_HEIGHT;
 
     FLEXIO_CAMERA_TransferReceiveEDMA(&FLEXIO1_peripheralConfig, &FLEXIO1_Camera_eDMA_Handle, &cam_xfer);
-    // 160x120 
+    // 160x120
     Camera_Init_Device(LPI2C3_PERIPHERAL, FRAMESIZE_QQVGA);
     PRINTF("OV camera init ok\n");
 
@@ -285,7 +288,7 @@ void CAM_OV2640_DEMO()
     /*loop frame show*/
     char picName[20];
     uint16_t picID = 1;
-    uint16_t picID_read = 1,picID_read_last = 0;
+    uint16_t picID_read = 1, picID_read_last = 0;
     const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
     FRESULT error;
 #if (FF_FS_RPATH >= 2U)
@@ -293,64 +296,64 @@ void CAM_OV2640_DEMO()
     if (error)
     {
         PRINTF("Change drive failed.\r\n");
-//        return -1;
+        //        return -1;
     }
 #endif
 
     static PressEvent encoder_KEY_event_val;
 
-	button_init(&encoder_KEY, read_button_GPIO, 0, btn1_id);
-	button_start(&encoder_KEY);
-	button_attach(&encoder_KEY, PRESS_UP,       BTN1_PRESS_UP_Handler);
-    
-    button_attach(&encoder_KEY, DOUBLE_CLICK,       BTN1_DOUBLE_CLICK_Handler);
-    button_attach(&encoder_KEY, LONG_PRESS_START,BTN1_LONG_PRESS_START_Handler);
+    button_init(&encoder_KEY, read_button_GPIO, 0, btn1_id);
+    button_start(&encoder_KEY);
+    button_attach(&encoder_KEY, PRESS_UP, BTN1_PRESS_UP_Handler);
+
+    button_attach(&encoder_KEY, DOUBLE_CLICK, BTN1_DOUBLE_CLICK_Handler);
+    button_attach(&encoder_KEY, LONG_PRESS_START, BTN1_LONG_PRESS_START_Handler);
 
     ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
-    
+
     while (1)
     {
-        if(!work_mode)
+        if (!work_mode)
         {
             im_par_change_handler(&m_image_parameters);
+//            PRINTF("m_image_parameters B:%d C:%d Q:%d\n",m_image_parameters.brightness,m_image_parameters.contrast,m_image_parameters.quality);
         }
         else
         {
             dis_pic_change_handler(&picID_read);
-            if(picID_read <1)
-                picID_read=1;
-            if(picID_read>picID)
-                picID_read=picID;
+            if (picID_read < 1)
+                picID_read = 1;
+            if (picID_read > picID)
+                picID_read = picID;
+
+            if (picID_read_last != picID_read)
+            {
+                sprintf(picName, "/m_dir/screen%d.bmp", picID_read);
+                bmp_pic_display(picName);
+//                picID_read_last = picID_read;
+                PRINTF("pic read ok.:%d\r\n",picID_read);
+                HAL_Delay(100);
+            }
+            picID_read_last = picID_read;
         }
-        
-        if (ov2640_finish_flag&& !work_mode)
+
+        if (ov2640_finish_flag && !work_mode)
         {
             ov2640_finish_flag = 0;
             /* PRINTF("OV2640 frame get\n");*/
             ST7735_FillRGBRect(0, 0, (uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0], 160, 120);
-            if(encoder_key_pressed)
-            {
-                encoder_key_pressed=0;
-                sprintf(picName,"/m_dir/screen%d.bmp",picID);
-                picID++;
-                bmp_pic_write(_T(picName),(uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
-            }
-
             image_parameters_display(m_image_parameters);
-            
+            if (encoder_key_pressed)
+            {
+                encoder_key_pressed = 0;
+                sprintf(picName, "/m_dir/screen%d.bmp", picID);
+                picID++;
+                bmp_pic_write(_T(picName), (uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
+            }
+
 
         }
-        else if(work_mode)
-        {
-            if(picID_read_last !=picID_read)
-            {
-                sprintf(picName, "/m_dir/BB%d.bmp", picID_read);
-                bmp_pic_display(picName);
-                picID_read_last=picID_read;
-            }
-            
-        }
-        
+
     }
 }
 
@@ -403,15 +406,19 @@ int main(void)
     }
 #endif
 
-    char picName[20];
-    for (uint16_t a = 0; a < 100; a++)
-    {
-        sprintf(picName, "/m_dir/BB%d.bmp", a);
-        bmp_pic_display(picName);
-        HAL_Delay(500);
-    }
+    // char picName[20];
+    // for (uint16_t a = 0; a < 100; a++)
+    // {
+    //     sprintf(picName, "/m_dir/BB%d.bmp", a);
+    //     bmp_pic_display(picName);
+    //     HAL_Delay(500);
+    // }
+//    char d_buf[14];
+//    char quality=8,brightness=9,contrast=10;
+//    	sprintf(d_buf, "Q:%2d B:%2d C:%2d", quality,brightness,contrast);
+//        ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
 
-    // CAM_OV2640_DEMO();
+    CAM_OV2640_DEMO();
 
     extern void lsm6ds3tr_c_read_data_polling(void);
     //    lsm6ds3tr_c_read_data_polling();
@@ -428,7 +435,7 @@ int main(void)
     PWM_StartTimer(PWM2, kPWM_Control_Module_0);
     uint32_t pwmVal = 1;
     //	ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
-    //	uint32_t mCurPosValue;
+    	uint32_t mCurPosValue;
 
     BH1730_test();
     double rth[2];
@@ -445,12 +452,12 @@ int main(void)
         BH1730_light = BH1730_readLux();
         PRINTF("BH1730_light=%.3f\n", BH1730_light);
         //    	 /* This read operation would capture all the position counter to responding hold registers. */
-        //		mCurPosValue = ENC_GetPositionValue(ENC1);
+        		mCurPosValue = ENC_GetPositionValue(ENC1);
         //
         //		/* Read the position values. */
-        //		PRINTF("Current position value: %ld\r\n", mCurPosValue);
-        //		PRINTF("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue(ENC1));
-        //		PRINTF("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue(ENC1));
+        		PRINTF("Current position value: %ld\r\n", mCurPosValue);
+        		PRINTF("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue(ENC1));
+        		PRINTF("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue(ENC1));
         /* Delay 1000 ms */
         HAL_Delay(1000U);
         if (g_pinSet)
@@ -481,9 +488,6 @@ int main(void)
         PWM_SetPwmLdok(PWM2, kPWM_Control_Module_0, true);
     }
 }
-
-
-
 
 void FATFS_DiskInit(void)
 {

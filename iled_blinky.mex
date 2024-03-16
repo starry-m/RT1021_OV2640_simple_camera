@@ -1456,7 +1456,7 @@
                      </config_set>
                   </instance>
                   <instance name="ENC1" uuid="dca114e4-7de9-4db6-b896-f03de09a4165" type="enc" type_id="enc_48d106d37c3ae205724d82e4ee6d2b7b" mode="general" peripheral="ENC1" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
-                     <config_set name="fsl_enc" quick_selection="QuickSelection1">
+                     <config_set name="fsl_enc">
                         <struct name="config">
                            <struct name="clockConfig_t">
                               <setting name="clockSource" value="BusInterfaceClock"/>
@@ -1484,7 +1484,10 @@
                               <setting name="enableWatchdog" value="false"/>
                            </struct>
                            <struct name="filter_config_t">
-                              <setting name="enableFilter" value="false"/>
+                              <setting name="enableFilter" value="true"/>
+                              <setting name="filterClock_s" value="1"/>
+                              <setting name="filterPeriod_s" value="10"/>
+                              <setting name="filterCount" value="3"/>
                            </struct>
                         </struct>
                         <struct name="interruptsCfg">

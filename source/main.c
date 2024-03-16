@@ -151,8 +151,8 @@ void image_parameters_display(struct _image_parameters param)
 {
     char d_buf[14];
     sprintf(d_buf, "Q:%2d B:%2d C:%2d", param.quality, param.brightness, param.contrast);
-//    ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
-    ST7735_WriteString(10, 10, d_buf, Font_11x18, ST7735_RED,ST7735_BLACK);
+    //    ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
+    ST7735_WriteString(10, 10, d_buf, Font_11x18, ST7735_RED, ST7735_BLACK);
 
     // char d_buf[2];
     // d_buf[0]=param.quality/10 +'0' ;
@@ -182,8 +182,7 @@ void BTN1_PRESS_UP_Handler(void *btn)
         im_par_chose++;
     else
         im_par_chose = 0;
-    PRINTF("im_par_chose=%d\n",im_par_chose);
-
+    PRINTF("im_par_chose=%d\n", im_par_chose);
 }
 void BTN1_DOUBLE_CLICK_Handler(void *btn)
 {
@@ -213,6 +212,8 @@ uint8_t enc_rotate()
 void im_par_change_handler(struct _image_parameters *param)
 {
     uint8_t menc_r = enc_rotate();
+    static struct _image_parameters temp_param;
+
     switch (im_par_chose)
     {
     case 0:
@@ -237,27 +238,37 @@ void im_par_change_handler(struct _image_parameters *param)
     default:
         break;
     }
+    if (param->quality != temp_param.quality)
+        OV2640_image_param_set(0, param->quality);
+    if (param->brightness != temp_param.brightness)
+        OV2640_image_param_set(1, param->brightness);
+    if (param->contrast != temp_param.contrast)
+        OV2640_image_param_set(2, param->contrast);
+    temp_param.brightness = param->brightness;
+    temp_param.contrast = param->contrast;
+    temp_param.quality = param->quality;
 }
+
 void dis_pic_change_handler(uint16_t *param)
 {
     uint8_t menc_r = enc_rotate();
-    uint16_t temp=*param;
+    uint16_t temp = *param;
     if (1 == menc_r)
     {
-        *param= temp+1;
+        *param = temp + 1;
     }
     else if (2 == menc_r)
     {
-    	*param= temp-1;
+        *param = temp - 1;
     }
 }
 void CAM_OV2640_DEMO()
 {
     struct _image_parameters m_image_parameters;
     /* lcd init  */
-    m_image_parameters.brightness=1;
-    m_image_parameters.contrast=1;
-    m_image_parameters.quality=20;
+    m_image_parameters.brightness = 1;
+    m_image_parameters.contrast = 1;
+    m_image_parameters.quality = 20;
     /*camera OV2640 init ,,PWDN LOW,RST HIGH*/
     GPIO_PinWrite(BOARD_CAM_PWDN_GPIO, BOARD_CAM_PWDN_GPIO_PIN, 0U);
     GPIO_PinWrite(BOARD_CAM_RES_GPIO, BOARD_CAM_RES_GPIO_PIN, 0U);
@@ -316,7 +327,7 @@ void CAM_OV2640_DEMO()
         if (!work_mode)
         {
             im_par_change_handler(&m_image_parameters);
-//            PRINTF("m_image_parameters B:%d C:%d Q:%d\n",m_image_parameters.brightness,m_image_parameters.contrast,m_image_parameters.quality);
+            //            PRINTF("m_image_parameters B:%d C:%d Q:%d\n",m_image_parameters.brightness,m_image_parameters.contrast,m_image_parameters.quality);
         }
         else
         {
@@ -330,8 +341,8 @@ void CAM_OV2640_DEMO()
             {
                 sprintf(picName, "/m_dir/screen%d.bmp", picID_read);
                 bmp_pic_display(picName);
-//                picID_read_last = picID_read;
-                PRINTF("pic read ok.:%d\r\n",picID_read);
+                //                picID_read_last = picID_read;
+                PRINTF("pic read ok.:%d\r\n", picID_read);
                 HAL_Delay(100);
             }
             picID_read_last = picID_read;
@@ -350,10 +361,7 @@ void CAM_OV2640_DEMO()
                 picID++;
                 bmp_pic_write(_T(picName), (uint8_t *)&FLEXIO1_Camera_Buffer[0][0][0]);
             }
-
-
         }
-
     }
 }
 
@@ -413,10 +421,10 @@ int main(void)
     //     bmp_pic_display(picName);
     //     HAL_Delay(500);
     // }
-//    char d_buf[14];
-//    char quality=8,brightness=9,contrast=10;
-//    	sprintf(d_buf, "Q:%2d B:%2d C:%2d", quality,brightness,contrast);
-//        ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
+    //    char d_buf[14];
+    //    char quality=8,brightness=9,contrast=10;
+    //    	sprintf(d_buf, "Q:%2d B:%2d C:%2d", quality,brightness,contrast);
+    //        ST7735_WriteString_lucency(10, 10, d_buf, Font_7x10, ST7735_RED);
 
     CAM_OV2640_DEMO();
 
@@ -435,7 +443,7 @@ int main(void)
     PWM_StartTimer(PWM2, kPWM_Control_Module_0);
     uint32_t pwmVal = 1;
     //	ENC_DoSoftwareLoadInitialPositionValue(ENC1); /* Update the position counter with initial value. */
-    	uint32_t mCurPosValue;
+    uint32_t mCurPosValue;
 
     BH1730_test();
     double rth[2];
@@ -452,12 +460,12 @@ int main(void)
         BH1730_light = BH1730_readLux();
         PRINTF("BH1730_light=%.3f\n", BH1730_light);
         //    	 /* This read operation would capture all the position counter to responding hold registers. */
-        		mCurPosValue = ENC_GetPositionValue(ENC1);
+        mCurPosValue = ENC_GetPositionValue(ENC1);
         //
         //		/* Read the position values. */
-        		PRINTF("Current position value: %ld\r\n", mCurPosValue);
-        		PRINTF("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue(ENC1));
-        		PRINTF("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue(ENC1));
+        PRINTF("Current position value: %ld\r\n", mCurPosValue);
+        PRINTF("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue(ENC1));
+        PRINTF("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue(ENC1));
         /* Delay 1000 ms */
         HAL_Delay(1000U);
         if (g_pinSet)
